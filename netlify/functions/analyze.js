@@ -18,29 +18,50 @@ exports.handler = async (event) => {
           contents: [{
             parts: [
               { inline_data: { mime_type: 'image/jpeg', data: image_base64 } },
-              { text: '이 이미지가 운동 앱(삼성헬스, 애플피트니스, 나이키런클럽, 스트라바, 가민, 카카오헬스 등)의 운동 기록 스크린샷인지 판별하세요. 아래 JSON 형식으로만 응답하고 다른 텍스트는 절대 포함하지 마세요:\n{"verified":true,"duration_minutes":45,"exercise_type":"러닝","reason":"나이키런클럽 러닝 기록 화면"}' }
+              { text: '이 이미지가 운동 앱의 운동 기록 스크린샷인지 판별해서 반드시 아래 JSON 형식으로만 답하세요. 다른 텍스트 없이 JSON만 출력하세요.\n{"verified":true,"duration_minutes":45,"exercise_type":"러닝","reason":"운동 기록 화면 확인됨"}' }
             ]
           }],
-          generationConfig: {
-            temperature: 0,
-            responseMimeType: 'application/json',
-          },
+          generationConfig: { temperature: 0 },
         })
       }
     );
 
     const d = await res.json();
+    console.log('Gemini raw response:', JSON.stringify(d));
 
-    // Gemini 응답 파싱
+    // 응답에서 텍스트 추출
     const raw = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+    console.log('Raw text:', raw);
 
+    // JSON 추출 시도 (여러 방법)
     let result;
+
+    // 방법 1: 직접 파싱
     try {
-      result = JSON.parse(cleaned);
-    } catch(e) {
-      // JSON 파싱 실패 시 기본값
-      result = { verified: false, reason: 'AI 응답을 파싱할 수 없어요. 다시 시도해주세요.' };
+      result = JSON.parse(raw.trim());
+    } catch(e1) {
+      // 방법 2: 코드블록 제거 후 파싱
+      try {
+        const cleaned = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        result = JSON.parse(cleaned);
+      } catch(e2) {
+        // 방법 3: JSON 부분만 추출
+        try {
+          const match = raw.match(/\{[\s\S]*\}/);
+          if (match) result = JSON.parse(match[0]);
+          else throw new Error('No JSON found');
+        } catch(e3) {
+          // 모두 실패 시 원문 반환 (디버깅용)
+          return {
+            statusCode: 200,
+            headers: CORS,
+            body: JSON.stringify({
+              verified: false,
+              reason: 'AI 응답 파싱 실패. 원문: ' + raw.substring(0, 200)
+            })
+          };
+        }
+      }
     }
 
     return { statusCode: 200, headers: CORS, body: JSON.stringify(result) };
