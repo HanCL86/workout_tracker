@@ -4,7 +4,7 @@ exports.handler = async (event) => {
   const CORS = {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
-  };   
+  };      
 
   try {
     const { image_base64 } = JSON.parse(event.body);
