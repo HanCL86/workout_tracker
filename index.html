@@ -306,7 +306,7 @@ function CertScreen({onCancel,onConfirm}) {
 
   const confirm = async () => {
     setSt('saving');
-    await onConfirm(result.duration_minutes||0, result.exercise_type||null);
+    await onConfirm(result.duration_minutes||0, result.exercise_type||null, result.exercise_date||null);
   };
   const retry = () => { setSt('upload'); setPreview(null); if(fileRef.current) fileRef.current.value=''; };
 
@@ -337,6 +337,7 @@ function CertScreen({onCancel,onConfirm}) {
       <div style={{background:'#0d2a1a',border:'1px solid #1a5c2a',borderRadius:12,padding:'12px 14px',marginBottom:10}}>
         <div style={{fontSize:14,fontWeight:500,color:'#4caf87',marginBottom:6}}><i className="ti ti-circle-check"/> 운동 인증 확인됨</div>
         {result.exercise_type&&<div style={{fontSize:13,color:'#4caf87'}}>종류: {result.exercise_type}</div>}
+          {result.exercise_date&&<div style={{fontSize:13,color:'#4caf87'}}>운동 날짜: {result.exercise_date}</div>}
         {result.duration_minutes&&<div style={{fontSize:13,color:'#4caf87'}}>운동 시간: {fDur(result.duration_minutes)}</div>}
         <div style={{fontSize:12,color:'#4caf87',marginTop:4,opacity:.8}}>{result.reason}</div>
       </div>
@@ -504,8 +505,10 @@ function App() {
   if (screen==='name')    return <NameScreen onDone={name=>{ login(name); setScreen('main'); }}/>;
   if (screen==='cert')    return <CertScreen
     onCancel={()=>setScreen('main')}
-    onConfirm={async (dur,exType)=>{
-      await sheetsCall('addCert',{name:me,week:wKey(),date:today(),exerciseType:exType,duration:dur});
+    onConfirm={async (dur,exType,exDate)=>{
+      const certDate = exDate || today();
+      const certWeek = exDate ? wKey(new Date(exDate)) : wKey();
+      await sheetsCall('addCert',{name:me,week:certWeek,date:certDate,exerciseType:exType,duration:dur});
       await refresh();
       setScreen('main');
     }}
