@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏃 운동 인증 모임</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0f0f0f;color:#e8e8e8;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+  input,button{font-family:inherit}
+  input{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;color:#e8e8e8;font-size:14px;width:100%;outline:none;transition:border .15s}
+  input:focus{border-color:#1e5f8e}
+  button{border:none;cursor:pointer;border-radius:8px;transition:opacity .15s}
+  button:hover:not(:disabled){opacity:.85}
+  button:disabled{cursor:not-allowed}
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:#111}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Auth는 기기 로컬에 저장 (이름/인증여부만) ─────────────────
+const AK = 'wk_auth_v9';
+const LS = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+  set: (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} },
+};
+
+// ── Sheets API 호출 헬퍼 ──────────────────────────────────────
+async function sheetsCall(action, params = {}) {
+  const res = await fetch('/.netlify/functions/sheets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...params }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '서버 오류 ' + res.status);
+  return data;
+}
+
+// ── AI 분석 호출 ──────────────────────────────────────────────
+async function analyzeImg(b64) {
+  const res = await fetch('/.netlify/functions/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image_base64: b64 }),
+  });
+  return res.json();
+}
+
+async function compressImg(file) {
+  return new Promise(res => {
+    const r = new FileReader(); r.onload = e => {
+      const img = new Image(); img.onload = () => {
+        const c = document.createElement('canvas'), M = 1024;
+        let w = img.width, h = img.height;
+        if (w > M) { h = Math.round(h*M/w); w = M; }
+        c.width = w; c.height = h; c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',.8).split(',')[1]);
+      }; img.src = e.target.result;
+    }; r.readAsDataURL(file);
+  });
+}
+
+// ── 유틸 ─────────────────────────────────────────────────────
+const won = n => n.toLocaleString() + '원';
+function fDur(m) {
+  if (!m) return '-';
+  if (m < 60) return m + '분';
+  const h = Math.floor(m/60), r = m%60;
+  return r ? `${h}시간 ${r}분` : `${h}시간`;
+}
+const today = () => new Date().toDateString();
+function isoW(d) {
+  const u = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dy = u.getUTCDay()||7; u.setUTCDate(u.getUTCDate()+4-dy);
+  const y0 = new Date(Date.UTC(u.getUTCFullYear(),0,1));
+  return Math.ceil((((u-y0)/86400000)+1)/7);
+}
+function wKey(d=new Date()) { return `${d.getFullYear()}-W${String(isoW(d)).padStart(2,'0')}`; }
+function wBounds(k) {
+  const [y,w] = k.split('-W').map(Number);
+  const j = new Date(y,0,4), m = new Date(j);
+  m.setDate(j.getDate()-((j.getDay()||7)-1)+(w-1)*7);
+  const s = new Date(m); s.setDate(m.getDate()+6);
+  return {mon:m, sun:s};
+}
+const fd = d => `${d.getMonth()+1}/${d.getDate()}`;
+
+// ── 공통 스타일 ───────────────────────────────────────────────
+const S = {
+  wrap:  {maxWidth:480, margin:'0 auto', padding:'1rem 1rem 3rem'},
+  card:  {background:'#161616', border:'1px solid #222', borderRadius:14, padding:'1.25rem', marginBottom:12},
+  tb:    {display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem'},
+  logo:  {textAlign:'center', padding:'2.5rem 0 1.5rem'},
+  lbl:   {fontSize:12, color:'#666', marginBottom:5},
+  fld:   {marginBottom:14},
+  bb:    (bg='#1e5f8e') => ({width:'100%', padding:'13px', fontSize:15, fontWeight:500, background:`linear-gradient(135deg,${bg},#0f3460)`, color:'#fff', borderRadius:10, cursor:'pointer', marginTop:8}),
+  sm:    {fontSize:12, padding:'5px 11px', background:'#1a1a1a', border:'1px solid #2a2a2a', color:'#888', borderRadius:7},
+  sec:   {fontSize:10, color:'#444', letterSpacing:2, textTransform:'uppercase', marginBottom:10},
+  err:   {fontSize:12, color:'#e05c5c', marginTop:6, minHeight:16},
+  strip: {background:'#121212', border:'1px solid #1e1e1e', borderRadius:12, padding:'12px 16px', display:'flex', justifyContent:'space-between', alignItems:'center'},
+  spin:  {textAlign:'center', padding:'3rem 0', color:'#555'},
+};
+
+function Logo({icon,title,sub}) {
+  return <div style={S.logo}>
+    <div style={{fontSize:42,marginBottom:10}}>{icon}</div>
+    <h1 style={{fontSize:22,fontWeight:500,color:'#fff',margin:'0 0 4px'}}>{title}</h1>
+    {sub && <p style={{fontSize:13,color:'#666',margin:0}}>{sub}</p>}
+  </div>;
+}
+function Spinner({msg='불러오는 중...'}) {
+  return <div style={S.spin}><i className="ti ti-loader" style={{fontSize:28}}/><div style={{fontSize:13,marginTop:10}}>{msg}</div></div>;
+}
+
+// ── 설정 화면 ─────────────────────────────────────────────────
+function SetupScreen({onDone}) {
+  const [err,setErr] = useState(''), [busy,setBusy] = useState(false);
+  const refs = {c:useRef(),r:useRef(),f:useRef(),m:useRef(),n:useRef()};
+  const submit = async () => {
+    const code = refs.c.current.value.trim().toUpperCase();
+    const name = refs.n.current.value.trim();
+    if (!code) {setErr('초대 코드를 입력하세요');return;}
+    if (!name) {setErr('이름을 입력하세요');return;}
+    const cfg = {inviteCode:code, required:+refs.r.current.value||2, finePerMiss:+refs.f.current.value||5000, maxFine:+refs.m.current.value||10000};
+    setBusy(true);
+    try {
+      await sheetsCall('saveConfig', cfg);
+      onDone(cfg, name);
+    } catch(e) { setErr('저장 실패: '+e.message); }
+    finally { setBusy(false); }
+  };
+  return <div style={S.wrap}>
+    <Logo icon="🏃" title="운동 인증 모임" sub="그룹을 처음 만들어볼게요"/>
+    <div style={S.card}>
+      <div style={S.sec}>그룹 설정</div>
+      <div style={S.fld}><div style={S.lbl}>초대 코드 (친구들에게 알려줄 코드)</div>
+        <input ref={refs.c} placeholder="예: GYM2025" style={{fontSize:17,letterSpacing:4,textTransform:'uppercase'}}/></div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:14}}>
+        <div><div style={S.lbl}>주당 필수 횟수</div><input ref={refs.r} type="number" defaultValue="2" min="1" max="7"/></div>
+        <div><div style={S.lbl}>회당 벌금(원)</div><input ref={refs.f} type="number" defaultValue="5000" step="1000"/></div>
+        <div><div style={S.lbl}>최대 벌금(원)</div><input ref={refs.m} type="number" defaultValue="10000" step="1000"/></div>
+      </div>
+      <div style={S.fld}><div style={S.lbl}>내 이름</div><input ref={refs.n} placeholder="홍길동"/></div>
+      <div style={S.err}>{err}</div>
+      <button style={{...S.bb(), opacity:busy?.6:1}} onClick={submit} disabled={busy}>
+        {busy ? '저장 중...' : '그룹 만들기'}
+      </button>
+    </div>
+  </div>;
+}
+
+// ── 코드 입력 ─────────────────────────────────────────────────
+function CodeScreen({cfg,onOk}) {
+  const [val,setVal] = useState(''), [err,setErr] = useState('');
+  const submit = () => {
+    if (!val.trim()) {setErr('코드를 입력하세요');return;}
+    if (val.trim().toUpperCase() !== cfg.inviteCode) {setErr('코드가 맞지 않아요');setVal('');return;}
+    onOk();
+  };
+  return <div style={S.wrap}>
+    <Logo icon="🔑" title="운동 인증 모임" sub="초대 코드를 입력하세요"/>
+    <div style={S.card}>
+      <div style={S.lbl}>초대 코드</div>
+      <input value={val} onChange={e=>setVal(e.target.value.toUpperCase())} placeholder="초대 코드"
+        style={{fontSize:22,textAlign:'center',letterSpacing:5}}
+        onKeyDown={e=>e.key==='Enter'&&submit()}/>
+      <div style={S.err}>{err}</div>
+      <button style={S.bb()} onClick={submit}>입장하기</button>
+    </div>
+    <p style={{fontSize:12,color:'#444',textAlign:'center',marginTop:8}}>코드는 그룹 관리자에게 문의하세요</p>
+  </div>;
+}
+
+// ── 이름 입력 ─────────────────────────────────────────────────
+function NameScreen({onDone}) {
+  const [val,setVal] = useState(''), [err,setErr] = useState('');
+  const submit = () => { if(!val.trim()){setErr('이름을 입력하세요');return;} onDone(val.trim()); };
+  return <div style={S.wrap}>
+    <Logo icon="👋" title="반갑습니다!" sub="이름을 알려주세요"/>
+    <div style={S.card}>
+      <div style={S.lbl}>이름</div>
+      <input value={val} onChange={e=>setVal(e.target.value)} placeholder="홍길동" style={{fontSize:16}}
+        onKeyDown={e=>e.key==='Enter'&&submit()}/>
+      <div style={S.err}>{err}</div>
+      <button style={S.bb()} onClick={submit}>시작하기</button>
+    </div>
+    <p style={{fontSize:12,color:'#444',textAlign:'center',marginTop:8}}>이름은 다른 멤버에게 표시돼요</p>
+  </div>;
+}
+
+// ── 메인 화면 ─────────────────────────────────────────────────
+function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing}) {
+  const w = wKey(); const {mon,sun} = wBounds(w);
+  const myR = records.filter(r=>r.name===me&&r.week===w);
+  const cnt = new Set(myR.map(r=>r.date)).size;
+  const tdDone = myR.some(r=>r.date===today());
+  const done = cnt>=cfg.required;
+  const fine = Math.min(Math.max(0,cfg.required-cnt)*cfg.finePerMiss, cfg.maxFine);
+
+  const names = [...new Set(records.map(r=>r.name))];
+  if (!names.includes(me)) names.push(me);
+  let tf = 0;
+  const rows = names.map(n=>{
+    const rs = records.filter(r=>r.name===n&&r.week===w);
+    const c = new Set(rs.map(r=>r.date)).size;
+    const dur = rs.reduce((s,r)=>s+(r.duration||0),0);
+    const f = Math.min(Math.max(0,cfg.required-c)*cfg.finePerMiss, cfg.maxFine);
+    tf+=f; return{name:n,cnt:c,fine:f,dur};
+  }).sort((a,b)=>b.cnt-a.cnt||a.fine-b.fine);
+
+  const SmDot = ({on}) => <div style={{width:10,height:10,borderRadius:'50%',background:on?'#2a6a3a':'#222',border:`1px solid ${on?'#3a8a4a':'#333'}`}}/>;
+  const BigDot = ({on}) => <div style={{width:36,height:36,borderRadius:'50%',border:`1px solid ${on?'#2a6a3a':'#333'}`,display:'flex',alignItems:'center',justifyContent:'center',background:on?'#1a4a2a':'#111'}}>
+    {on&&<i className="ti ti-check" style={{fontSize:16,color:'#4caf87'}}/>}
+  </div>;
+
+  return <div style={S.wrap}>
+    <div style={S.tb}>
+      <span style={{fontSize:14,fontWeight:500,color:'#fff'}}>{me} 님</span>
+      <div style={{display:'flex',gap:6}}>
+        <button style={{...S.sm,opacity:refreshing?.5:1}} onClick={onRefresh} disabled={refreshing}>
+          <i className={`ti ti-${refreshing?'loader':'refresh'}`}/>
+        </button>
+        <button style={S.sm} onClick={onAdmin}><i className="ti ti-settings"/></button>
+        <button style={S.sm} onClick={onLogout}><i className="ti ti-logout"/></button>
+      </div>
+    </div>
+
+    <div style={{...S.card,textAlign:'center',padding:'1.5rem'}}>
+      <div style={{fontSize:12,color:'#555',marginBottom:10}}>이번 주 ({fd(mon)} ~ {fd(sun)})</div>
+      <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:'1rem'}}>
+        {Array.from({length:cfg.required},(_,i)=><BigDot key={i} on={i<cnt}/>)}
+      </div>
+      <div style={{fontSize:13,marginBottom:'1rem',color:done?'#4caf87':fine>0?'#e09a4c':'#888'}}>
+        {done?'이번 주 인증 완료! 🎉':`${cnt}/${cfg.required}회 완료`}
+      </div>
+      <button disabled={done||tdDone}
+        style={{...S.bb(done||tdDone?'#333':'#1e5f8e'),marginTop:0,opacity:done||tdDone?.4:1}}
+        onClick={onCert}>
+        <i className="ti ti-camera"/> 스크린샷으로 인증하기
+      </button>
+      <div style={{fontSize:12,color:'#666',marginTop:8,minHeight:16}}>
+        {done?'벌금 없음':tdDone?'오늘은 이미 인증했어요':fine>0?`현재 예상 벌금 ${won(fine)}`:''}
+      </div>
+    </div>
+
+    <div style={S.card}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+        <div style={S.sec}>이번 주 현황</div>
+        <div style={{display:'flex',gap:16,fontSize:11,color:'#444'}}><span>운동시간</span><span>벌금</span></div>
+      </div>
+      {rows.map((r,i)=>{
+        const isMe=r.name===me, ok=r.cnt>=cfg.required;
+        const fc=ok?'#4caf87':r.fine>0?'#e05c5c':'#666';
+        const ft=ok?'완료':r.fine>0?`-${won(r.fine)}`:`${r.cnt}/${cfg.required}`;
+        return <div key={r.name} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 1.25rem',borderBottom:'1px solid #1a1a1a',background:isMe?'#1a1a1a':'transparent',margin:'0 -1.25rem'}}>
+          <span style={{fontSize:12,color:'#444',width:16,textAlign:'center'}}>{i+1}</span>
+          <span style={{fontSize:14,color:'#ddd',flex:1}}>{r.name}{isMe&&<span style={{fontSize:11,color:'#444',marginLeft:4}}>(나)</span>}</span>
+          <div style={{display:'flex',gap:3}}>{Array.from({length:cfg.required},(_,j)=><SmDot key={j} on={j<r.cnt}/>)}</div>
+          <span style={{fontSize:12,color:'#666',minWidth:68,textAlign:'center'}}>{r.dur?fDur(r.dur):'-'}</span>
+          <span style={{fontSize:13,fontWeight:500,minWidth:52,textAlign:'right',color:fc}}>{ft}</span>
+        </div>;
+      })}
+    </div>
+
+    <div style={S.strip}>
+      <div>
+        <div style={{fontSize:12,color:'#666',marginBottom:2}}>이번 주 예상 모금액</div>
+        <div style={{fontSize:18,fontWeight:500,color:tf>0?'#e05c5c':'#4caf87'}}>{tf>0?won(tf):'모두 완료! 🎉'}</div>
+      </div>
+      <i className="ti ti-pig-money" style={{fontSize:28,color:'#333'}}/>
+    </div>
+  </div>;
+}
+
+// ── 인증 화면 ─────────────────────────────────────────────────
+function CertScreen({onCancel,onConfirm}) {
+  const [st,setSt] = useState('upload'); // upload|loading|result|saving
+  const [preview,setPreview] = useState(null);
+  const [result,setResult] = useState(null);
+  const fileRef = useRef();
+
+  const handleFile = async e => {
+    const file = e.target.files[0]; if(!file) return;
+    new FileReader().onload=ev=>setPreview(ev.target.result), new FileReader().readAsDataURL(file);
+    const r2=new FileReader(); r2.onload=ev=>setPreview(ev.target.result); r2.readAsDataURL(file);
+    setSt('loading');
+    try {
+      const b64 = await compressImg(file);
+      const res = await analyzeImg(b64);
+      setResult(res); setSt('result');
+    } catch(err) {
+      setResult({verified:false,reason:'분석 오류: '+err.message}); setSt('result');
+    }
+  };
+
+  const confirm = async () => {
+    setSt('saving');
+    await onConfirm(result.duration_minutes||0, result.exercise_type||null);
+  };
+  const retry = () => { setSt('upload'); setPreview(null); if(fileRef.current) fileRef.current.value=''; };
+
+  return <div style={S.wrap}>
+    <div style={S.tb}>
+      <button style={S.sm} onClick={onCancel}><i className="ti ti-arrow-left"/> 취소</button>
+      <span style={{fontSize:14,fontWeight:500,color:'#fff'}}>운동 인증</span>
+      <div style={{width:50}}/>
+    </div>
+
+    {preview && <div style={{marginBottom:12}}><img src={preview} style={{width:'100%',borderRadius:12,maxHeight:240,objectFit:'cover'}}/></div>}
+
+    {st==='upload'&&<div onClick={()=>fileRef.current.click()}
+      style={{textAlign:'center',padding:'2.5rem 1rem',cursor:'pointer',border:'1.5px dashed #2a2a2a',borderRadius:14,marginBottom:12}}>
+      <i className="ti ti-upload" style={{fontSize:36,color:'#444'}}/>
+      <div style={{fontSize:15,fontWeight:500,margin:'10px 0 4px',color:'#ccc'}}>운동 앱 스크린샷 업로드</div>
+      <div style={{fontSize:12,color:'#555'}}>삼성헬스 · 애플피트니스 · 나이키런 · 스트라바 · 가민</div>
+    </div>}
+
+    {(st==='loading'||st==='saving')&&<div style={{...S.card,textAlign:'center',padding:'2rem'}}>
+      <i className="ti ti-loader" style={{fontSize:28,color:'#666'}}/>
+      <div style={{fontSize:13,color:'#777',marginTop:10}}>
+        {st==='loading'?'Haiku AI가 운동 기록을 분석 중이에요...':'인증을 저장하는 중이에요...'}
+      </div>
+    </div>}
+
+    {st==='result'&&result&&(result.verified ? <>
+      <div style={{background:'#0d2a1a',border:'1px solid #1a5c2a',borderRadius:12,padding:'12px 14px',marginBottom:10}}>
+        <div style={{fontSize:14,fontWeight:500,color:'#4caf87',marginBottom:6}}><i className="ti ti-circle-check"/> 운동 인증 확인됨</div>
+        {result.exercise_type&&<div style={{fontSize:13,color:'#4caf87'}}>종류: {result.exercise_type}</div>}
+        {result.duration_minutes&&<div style={{fontSize:13,color:'#4caf87'}}>운동 시간: {fDur(result.duration_minutes)}</div>}
+        <div style={{fontSize:12,color:'#4caf87',marginTop:4,opacity:.8}}>{result.reason}</div>
+      </div>
+      <button style={S.bb('#1a5c2a')} onClick={confirm}>인증 완료하기</button>
+    </> : <>
+      <div style={{background:'#2a1010',border:'1px solid #5c1a1a',borderRadius:12,padding:'12px 14px',marginBottom:10}}>
+        <div style={{fontSize:14,fontWeight:500,color:'#e05c5c',marginBottom:6}}><i className="ti ti-x"/> 운동 기록을 확인할 수 없어요</div>
+        <div style={{fontSize:13,color:'#e05c5c'}}>{result.reason||'운동 앱 스크린샷이 아닌 것 같아요'}</div>
+      </div>
+      <button style={S.bb()} onClick={retry}>다시 시도</button>
+      <p style={{fontSize:12,color:'#444',textAlign:'center',marginTop:8}}>삼성헬스, 스트라바, 나이키런 등 운동 완료 화면을 캡처해 주세요</p>
+    </>)}
+
+    <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleFile}/>
+  </div>;
+}
+
+// ── 관리자 화면 ───────────────────────────────────────────────
+function AdminScreen({cfg,records,onBack,onCfgSaved}) {
+  const [newCode,setNewCode] = useState('');
+  const [req,setReq] = useState(String(cfg.required));
+  const [fine,setFine] = useState(String(cfg.finePerMiss));
+  const [max,setMax] = useState(String(cfg.maxFine));
+  const [err,setErr] = useState(''), [busy,setBusy] = useState(false);
+
+  const weeks = [...new Set(records.map(r=>r.week))].sort().reverse();
+  const names = [...new Set(records.map(r=>r.name))];
+  const cT={},cF={};names.forEach(n=>{cT[n]=0;cF[n]=0;});
+
+  const changeCode = async () => {
+    if(!newCode.trim()){setErr('새 코드를 입력하세요');return;}
+    setBusy(true);
+    try {
+      const nc={...cfg,inviteCode:newCode.trim().toUpperCase()};
+      await sheetsCall('saveConfig',nc);
+      onCfgSaved(nc);
+      alert(`코드가 "${nc.inviteCode}"로 변경됐어요!`);
+      setNewCode('');setErr('');
+    } catch(e){setErr('오류: '+e.message);}
+    finally{setBusy(false);}
+  };
+  const saveRules = async () => {
+    setBusy(true);
+    try {
+      const nc={...cfg,required:+req||2,finePerMiss:+fine||5000,maxFine:+max||10000};
+      await sheetsCall('saveConfig',nc);
+      onCfgSaved(nc);
+      alert('저장됐어요!');
+    } catch(e){alert('오류: '+e.message);}
+    finally{setBusy(false);}
+  };
+
+  return <div style={S.wrap}>
+    <div style={S.tb}>
+      <button style={S.sm} onClick={onBack}><i className="ti ti-arrow-left"/> 돌아가기</button>
+      <span style={{fontSize:14,fontWeight:500,color:'#fff'}}>그룹 설정</span>
+      <div style={{width:60}}/>
+    </div>
+
+    <div style={S.card}>
+      <div style={S.sec}>초대 코드 변경</div>
+      <div style={{fontSize:13,color:'#666',marginBottom:8}}>현재: <strong style={{color:'#aaa',letterSpacing:3}}>{cfg.inviteCode}</strong></div>
+      <input value={newCode} onChange={e=>setNewCode(e.target.value.toUpperCase())} placeholder="새 초대 코드" style={{letterSpacing:3,fontSize:15}}/>
+      <button style={{...S.bb(),opacity:busy?.5:1}} onClick={changeCode} disabled={busy}>코드 변경</button>
+      <div style={S.err}>{err}</div>
+    </div>
+
+    <div style={S.card}>
+      <div style={S.sec}>규칙 변경</div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:8}}>
+        <div><div style={S.lbl}>필수 횟수</div><input type="number" value={req} onChange={e=>setReq(e.target.value)} min="1" max="7"/></div>
+        <div><div style={S.lbl}>회당 벌금</div><input type="number" value={fine} onChange={e=>setFine(e.target.value)} step="1000"/></div>
+        <div><div style={S.lbl}>최대 벌금</div><input type="number" value={max} onChange={e=>setMax(e.target.value)} step="1000"/></div>
+      </div>
+      <button style={{...S.bb(),opacity:busy?.5:1}} onClick={saveRules} disabled={busy}>저장</button>
+    </div>
+
+    <div style={S.card}>
+      <div style={S.sec}>누적 기록 · 정산</div>
+      {!weeks.length
+        ? <div style={{fontSize:13,color:'#444',textAlign:'center',padding:'1rem'}}>아직 기록이 없어요</div>
+        : <>
+          <div style={{display:'flex',justifyContent:'flex-end',fontSize:11,color:'#444',paddingBottom:6}}>
+            <span style={{minWidth:70,textAlign:'center'}}>운동시간</span>
+            <span style={{minWidth:60,textAlign:'right'}}>벌금</span>
+          </div>
+          {weeks.map(k=>{
+            const{mon,sun}=wBounds(k);
+            return <div key={k} style={{marginBottom:14}}>
+              <div style={{fontSize:11,color:'#444',marginBottom:4,paddingBottom:4,borderBottom:'1px solid #1e1e1e'}}>{fd(mon)} ~ {fd(sun)}</div>
+              {names.map(n=>{
+                const rs=records.filter(r=>r.name===n&&r.week===k);
+                const c=new Set(rs.map(r=>r.date)).size;
+                const dur=rs.reduce((s,r)=>s+(r.duration||0),0);
+                const f=Math.min(Math.max(0,cfg.required-c)*cfg.finePerMiss,cfg.maxFine);
+                cT[n]+=dur;cF[n]+=f;
+                const ok=c>=cfg.required;
+                return <div key={n} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:'1px solid #1a1a1a',fontSize:13}}>
+                  <span style={{color:'#ccc'}}>{n}</span>
+                  <span style={{color:'#666',minWidth:70,textAlign:'center'}}>{fDur(dur)}</span>
+                  <span style={{fontWeight:500,minWidth:60,textAlign:'right',color:ok?'#4caf87':f>0?'#e05c5c':'#666'}}>{ok?'완료':f>0?`-${won(f)}`:`${c}/${cfg.required}`}</span>
+                </div>;
+              })}
+            </div>;
+          })}
+          <div style={{borderTop:'1px solid #222',paddingTop:10,marginTop:4}}>
+            <div style={{fontSize:11,color:'#444',marginBottom:6}}>누적 합계</div>
+            {names.map(n=><div key={n} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:'1px solid #1a1a1a',fontSize:13}}>
+              <span style={{fontWeight:500,color:'#ccc'}}>{n}</span>
+              <span style={{color:'#666',minWidth:70,textAlign:'center'}}>{fDur(cT[n])}</span>
+              <span style={{fontWeight:500,minWidth:60,textAlign:'right',color:cF[n]>0?'#e05c5c':'#4caf87'}}>{cF[n]>0?`-${won(cF[n])}`:'0원'}</span>
+            </div>)}
+          </div>
+        </>
+      }
+    </div>
+  </div>;
+}
+
+// ── 앱 루트 ──────────────────────────────────────────────────
+function App() {
+  const [screen,  setScreen]  = useState('loading');
+  const [cfg,     setCfg]     = useState(null);
+  const [records, setRecords] = useState([]);
+  const [me,      setMe]      = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // 앱 로드 시 Sheets에서 데이터 가져오기
+  useEffect(() => {
+    const auth = LS.get(AK);
+    if (auth?.verified) setMe(auth.name);
+    sheetsCall('getAll')
+      .then(({config,records}) => {
+        setRecords(records || []);
+        if (!config) {
+          setScreen('setup');
+        } else {
+          setCfg(config);
+          setScreen(auth?.verified ? 'main' : 'code');
+        }
+      })
+      .catch(e => {
+        console.error(e);
+        setScreen('error');
+      });
+  }, []);
+
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      const {config,records} = await sheetsCall('getAll');
+      if (config) setCfg(config);
+      setRecords(records || []);
+    } catch(e) { alert('새로고침 실패: '+e.message); }
+    finally { setRefreshing(false); }
+  };
+
+  const login = (name) => { setMe(name); LS.set(AK,{name,verified:true}); };
+  const logout = () => { setMe(''); LS.set(AK,{name:'',verified:false}); setScreen('code'); };
+
+  if (screen==='loading') return <div style={S.wrap}><Logo icon="🏃" title="운동 인증 모임"/><Spinner msg="Google Sheets에서 불러오는 중..."/></div>;
+  if (screen==='error')   return <div style={S.wrap}><Logo icon="⚠️" title="연결 오류" sub="Netlify 환경변수(GOOGLE_SERVICE_ACCOUNT, SPREADSHEET_ID)를 확인하세요"/></div>;
+  if (screen==='setup')   return <SetupScreen onDone={(cfg,name)=>{ setCfg(cfg); login(name); setScreen('main'); }}/>;
+  if (screen==='code')    return <CodeScreen cfg={cfg} onOk={()=>setScreen('name')}/>;
+  if (screen==='name')    return <NameScreen onDone={name=>{ login(name); setScreen('main'); }}/>;
+  if (screen==='cert')    return <CertScreen
+    onCancel={()=>setScreen('main')}
+    onConfirm={async (dur,exType)=>{
+      await sheetsCall('addCert',{name:me,week:wKey(),date:today(),exerciseType:exType,duration:dur});
+      await refresh();
+      setScreen('main');
+    }}
+  />;
+  if (screen==='admin')   return <AdminScreen cfg={cfg} records={records} onBack={()=>setScreen('main')} onCfgSaved={c=>{setCfg(c);}}/>;
+
+  return <MainScreen cfg={cfg} records={records} me={me}
+    onCert={()=>setScreen('cert')}
+    onLogout={logout}
+    onAdmin={()=>setScreen('admin')}
+    onRefresh={refresh}
+    refreshing={refreshing}
+  />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
