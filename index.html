@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏃 운동 인증 모임</title>
+<title>🏃 뚱망방지위원회</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -141,7 +141,7 @@ function SetupScreen({onDone}) {
     finally { setBusy(false); }
   };
   return <div style={S.wrap}>
-    <Logo icon="🏃" title="운동 인증 모임" sub="그룹을 처음 만들어볼게요"/>
+    <Logo icon="🏃" title="뚱망 방지 위원회" sub="그룹을 처음 만들어볼게요"/>
     <div style={S.card}>
       <div style={S.sec}>그룹 설정</div>
       <div style={S.fld}><div style={S.lbl}>초대 코드 (친구들에게 알려줄 코드)</div>
@@ -169,7 +169,7 @@ function CodeScreen({cfg,onOk}) {
     onOk();
   };
   return <div style={S.wrap}>
-    <Logo icon="🔑" title="운동 인증 모임" sub="초대 코드를 입력하세요"/>
+    <Logo icon="🔑" title="뚱망 방지 위원회" sub="초대 코드를 입력하세요"/>
     <div style={S.card}>
       <div style={S.lbl}>초대 코드</div>
       <input value={val} onChange={e=>setVal(e.target.value.toUpperCase())} placeholder="초대 코드"
