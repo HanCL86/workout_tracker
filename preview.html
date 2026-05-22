@@ -4,825 +4,516 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🔧 미리보기 | 뚱망 방지 위원회</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0f0f0f;color:#e8e8e8;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
-  input,button{font-family:inherit}
-  input{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;color:#e8e8e8;font-size:14px;width:100%;outline:none;transition:border .15s}
-  input:focus{border-color:#1e5f8e}
-  button{border:none;cursor:pointer;border-radius:8px;transition:opacity .15s}
-  button:hover:not(:disabled){opacity:.85}
-  button:disabled{cursor:not-allowed}
-  ::-webkit-scrollbar{width:5px}
-  ::-webkit-scrollbar-track{background:#111}
-  ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0f0f;color:#e8e8e8;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;min-height:100vh}
+input,button{font-family:inherit}
+input{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;color:#e8e8e8;font-size:14px;width:100%;outline:none}
+input:focus{border-color:#1e5f8e}
+button{border:none;cursor:pointer;border-radius:8px;transition:opacity .15s}
+button:hover{opacity:.85}
+.wrap{max-width:480px;margin:0 auto;padding:1rem 1rem 3rem}
+.card{background:#161616;border:1px solid #222;border-radius:14px;padding:1.25rem;margin-bottom:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.sm-btn{font-size:12px;padding:5px 11px;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;border-radius:7px;cursor:pointer}
+.bb{width:100%;padding:13px;font-size:15px;font-weight:500;background:linear-gradient(135deg,#1e5f8e,#0f3460);color:#fff;border-radius:10px;cursor:pointer;margin-top:8px}
+.bb-red{background:linear-gradient(135deg,#8b1a1a,#0f3460)}
+.bb-green{background:linear-gradient(135deg,#1a5c2a,#0f3460)}
+.sec{font-size:10px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.tab{flex:1;padding:8px;font-size:13px;border-radius:8px;cursor:pointer;border:1px solid #222;background:transparent;color:#555}
+.tab.active{background:#1e3a5f;color:#7ab8e8;border-color:#1e5f8e;font-weight:600}
+.lb-row{display:flex;align-items:center;gap:8px;padding:10px 1.25rem;border-bottom:1px solid #1a1a1a}
+.lb-row.me{background:#1a1a1a}
+.dot-sm{width:10px;height:10px;border-radius:50%;background:#222;border:1px solid #333;display:inline-block}
+.dot-sm.on{background:#2a6a3a;border-color:#3a8a4a}
+.dot-lg{width:36px;height:36px;border-radius:50%;border:1px solid #333;display:flex;align-items:center;justify-content:center;background:#111}
+.dot-lg.on{background:#1a4a2a;border-color:#2a6a3a}
+.strip{background:#121212;border:1px solid #1e1e1e;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.beer-box{background:#1a1400;border:1px solid #3a3000;border-radius:12px;padding:12px 16px;margin-top:12px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:999;padding:1rem}
+.modal{background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:1.5rem;width:100%;max-width:360px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-cell{background:#141414;border:1px solid #222;border-radius:8px;padding:4px 2px 6px;min-height:52px;text-align:center}
+.cal-cell.today{border-color:#4caf87}
+.cal-cell.all-done{background:#0d2a1a;border-color:#1a5c2a}
+.cal-cell.has-cert{background:#161e16}
+.cal-day{font-size:11px;color:#555;margin-bottom:3px}
+.cal-day.today{color:#4caf87}
+.cert-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.member-dot{width:8px;height:8px;border-radius:50%}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#888}
+.screen{display:none}
+.screen.active{display:block}
+.warn-box{font-size:11px;color:#664;background:#1a1800;padding:6px 10px;border-radius:6px;margin-bottom:8px}
+.info-box{font-size:11px;color:#555;background:#111;padding:6px 10px;border-radius:6px;margin-bottom:8px}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useRef } = React;
+<div class="wrap">
 
-// ── Auth는 기기 로컬에 저장 (이름/인증여부만) ─────────────────
-const AK = 'wk_auth_v9';
-const LS = {
-  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
-  set: (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} },
-};
+<!-- 메인 화면 -->
+<div id="screen-main" class="screen active">
+  <div class="topbar">
+    <span id="main-name" style="font-size:14px;font-weight:500;color:#fff"></span>
+    <div style="display:flex;gap:6px">
+      <button class="sm-btn" onclick="location.reload()">↺</button>
+      <button class="sm-btn" onclick="showScreen('admin')">⚙</button>
+      <button class="sm-btn" onclick="showScreen('main')">↩</button>
+    </div>
+  </div>
 
-// ── Sheets API 호출 헬퍼 ──────────────────────────────────────
-async function sheetsCall(action, params = {}) {
-  const res = await fetch('/.netlify/functions/sheets', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...params }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || '서버 오류 ' + res.status);
-  return data;
+  <!-- 탭 -->
+  <div style="display:flex;gap:6px;margin-bottom:12px">
+    <button class="tab active" id="tab-status" onclick="switchTab('status')">📊 현황</button>
+    <button class="tab" id="tab-calendar" onclick="switchTab('calendar')">📅 달력</button>
+  </div>
+
+  <!-- 현황 탭 -->
+  <div id="view-status">
+    <div class="card" style="text-align:center;padding:1.5rem">
+      <div style="font-size:12px;color:#555;margin-bottom:10px" id="week-label"></div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:1rem" id="my-dots"></div>
+      <div style="font-size:13px;margin-bottom:1rem" id="my-status"></div>
+      <button class="bb" onclick="showScreen('cert')">📷 스크린샷으로 인증하기</button>
+      <div style="font-size:12px;color:#666;margin-top:8px" id="my-fine-msg"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="sec">이번 주 현황</div>
+        <div style="display:flex;gap:16px;font-size:11px;color:#444"><span>운동시간</span><span>벌금</span></div>
+      </div>
+      <div id="leaderboard"></div>
+    </div>
+
+    <div class="strip">
+      <div>
+        <div style="font-size:12px;color:#666;margin-bottom:2px">이번 주 예상 모금액</div>
+        <div style="font-size:18px;font-weight:500" id="week-total"></div>
+      </div>
+      <span style="font-size:28px;color:#333">🐷</span>
+    </div>
+
+    <div class="beer-box" id="beer-box">
+      <div style="font-size:12px;color:#888;margin-bottom:2px">누적 벌금 펀드</div>
+      <div style="font-size:16px;font-weight:500;color:#f0c040" id="beer-text"></div>
+      <div style="font-size:11px;color:#666;margin-top:2px" id="beer-sub"></div>
+    </div>
+  </div>
+
+  <!-- 달력 탭 -->
+  <div id="view-calendar" style="display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button class="sm-btn" id="cal-prev" onclick="calNav(-1)">‹</button>
+        <span style="font-size:15px;font-weight:500;color:#fff" id="cal-title"></span>
+        <button class="sm-btn" id="cal-next" onclick="calNav(1)">›</button>
+      </div>
+      <div class="cal-grid" style="margin-bottom:3px">
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">월</div>
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">화</div>
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">수</div>
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">목</div>
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">금</div>
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">토</div>
+        <div style="text-align:center;font-size:11px;color:#555;padding:4px 0">일</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="legend" id="cal-legend"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 인증 화면 -->
+<div id="screen-cert" class="screen">
+  <div class="topbar">
+    <button class="sm-btn" onclick="showScreen('main')">← 취소</button>
+    <span style="font-size:14px;font-weight:500;color:#fff">운동 인증</span>
+    <div style="width:50px"></div>
+  </div>
+  <div style="text-align:center;padding:2.5rem 1rem;cursor:pointer;border:1.5px dashed #2a2a2a;border-radius:14px;margin-bottom:12px" onclick="simulateCert()">
+    <div style="font-size:36px;color:#444">⬆</div>
+    <div style="font-size:15px;font-weight:500;margin:10px 0 4px;color:#ccc">운동 앱 스크린샷 업로드</div>
+    <div style="font-size:12px;color:#555">삼성헬스 · 애플피트니스 · 나이키런 · 스트라바</div>
+    <div style="font-size:11px;color:#444;margin-top:8px">(미리보기: 클릭하면 AI 분석 시뮬레이션)</div>
+  </div>
+  <div id="cert-result" style="display:none">
+    <div style="background:#0d2a1a;border:1px solid #1a5c2a;border-radius:12px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:500;color:#4caf87;margin-bottom:6px">✓ 운동 인증 확인됨</div>
+      <div style="font-size:13px;color:#4caf87">종류: 러닝</div>
+      <div style="font-size:13px;color:#4caf87">운동 시간: 45분</div>
+      <div style="font-size:13px;color:#4caf87">운동 날짜: <span id="cert-date"></span></div>
+      <div style="font-size:12px;color:#4caf87;margin-top:4px;opacity:.8">미리보기 모드: 나이키런 러닝 기록 확인됨</div>
+    </div>
+    <button class="bb bb-green" onclick="confirmCert()">인증 완료하기</button>
+  </div>
+  <div id="cert-loading" style="display:none;text-align:center;padding:2rem">
+    <div style="font-size:13px;color:#777">AI가 운동 기록을 분석 중이에요...</div>
+  </div>
+</div>
+
+<!-- 관리자 화면 -->
+<div id="screen-admin" class="screen">
+  <div class="topbar">
+    <button class="sm-btn" onclick="showScreen('main')">← 돌아가기</button>
+    <span style="font-size:14px;font-weight:500;color:#fff">그룹 설정</span>
+    <div style="width:60px"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec">내 이름 변경</div>
+    <div style="font-size:13px;color:#666;margin-bottom:4px">현재 이름: <strong style="color:#ccc" id="admin-my-name"></strong></div>
+    <div class="info-box">ℹ️ 이름 변경 후 기존 인증 기록은 이전 이름으로 남아요. 기록 통일이 필요하면 구글 시트에서 직접 수정하세요.</div>
+    <input id="new-name-input" placeholder="새 이름 입력" style="font-size:14px"/>
+    <div style="font-size:12px;color:#e05c5c;margin-top:6px;min-height:16px" id="name-err"></div>
+    <button class="bb" onclick="changeName()">이름 변경</button>
+  </div>
+
+  <div class="card">
+    <div class="sec">초대 코드 변경</div>
+    <div style="font-size:13px;color:#666;margin-bottom:4px">현재: <strong style="color:#aaa;letter-spacing:3px" id="cur-code"></strong></div>
+    <div class="warn-box">⚠️ 이름 변경은 위 "내 이름 변경"을 사용하세요. 여기는 그룹 입장 코드만 변경하는 곳이에요.</div>
+    <input id="new-code-input" placeholder="새 초대 코드 (예: GYM2025)" style="letter-spacing:3px;font-size:15px;text-transform:uppercase"/>
+    <div style="font-size:11px;color:#555;margin-top:4px">코드 변경 시 모든 멤버가 재로그인 필요해요</div>
+    <button class="bb" onclick="changeCode()">코드 변경</button>
+    <div style="font-size:12px;color:#e05c5c;margin-top:6px;min-height:16px" id="code-err"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec">규칙 변경</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px">
+      <div><div style="font-size:12px;color:#666;margin-bottom:5px">필수 횟수</div><input type="number" id="req-input" min="1" max="7"/></div>
+      <div><div style="font-size:12px;color:#666;margin-bottom:5px">회당 벌금</div><input type="number" id="fine-input" step="1000"/></div>
+      <div><div style="font-size:12px;color:#666;margin-bottom:5px">최대 벌금</div><input type="number" id="max-input" step="1000"/></div>
+    </div>
+    <button class="bb" onclick="saveRules()">저장</button>
+  </div>
+
+  <div class="card" style="border-color:#3a1a1a">
+    <div class="sec">🍺 벌금 초기화</div>
+    <div style="font-size:13px;color:#888;margin-bottom:10px">누적된 벌금을 0으로 리셋해요. 관리자 비밀번호가 필요해요.</div>
+    <button class="bb bb-red" onclick="showResetModal()">초기화하기</button>
+  </div>
+
+  <div class="card">
+    <div class="sec">누적 기록 · 정산</div>
+    <div id="admin-history"></div>
+  </div>
+</div>
+
+<!-- 리셋 모달 -->
+<div class="modal-bg" id="reset-modal" style="display:none">
+  <div class="modal">
+    <div style="font-size:16px;font-weight:500;color:#fff;margin-bottom:8px">🍺 벌금 초기화</div>
+    <div style="font-size:13px;color:#888;margin-bottom:16px">현재까지 누적된 벌금 기록을 초기화합니다.<br>기존 기록은 삭제되지 않아요.</div>
+    <div style="font-size:12px;color:#666;margin-bottom:5px">관리자 비밀번호</div>
+    <input type="password" id="reset-pw" placeholder="비밀번호 입력" style="margin-bottom:8px"/>
+    <div style="font-size:12px;color:#e05c5c;margin-top:4px;min-height:16px" id="reset-err"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button style="flex:1;padding:11px;font-size:14px;background:#222;border:1px solid #333;color:#888;border-radius:8px;cursor:pointer" onclick="hideResetModal()">취소</button>
+      <button class="bb bb-red" style="flex:1;margin-top:0" onclick="doReset()">초기화하기</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── 더미 데이터 ────────────────────────────────────────────────
+const MEMBERS = ['홍길동','김철수','이영희','박민준','최수진','오지훈','강다혜'];
+const COLORS   = ['#4caf87','#7ab8e8','#e09a4c','#e05c5c','#b87de8','#78d4c8','#e878b4'];
+const colorMap = {};
+MEMBERS.forEach((n,i) => colorMap[n] = COLORS[i]);
+
+let ME = '홍길동';
+let CFG = { inviteCode:'SPORT25', required:2, finePerMiss:5000, maxFine:10000, adminPassword:'뚱망1234', resetTimestamp:0 };
+
+function makeDate(daysAgo) {
+  const d = new Date(); d.setDate(d.getDate()-daysAgo); return d.toDateString();
 }
-
-
-// ── 🔧 미리보기 모드: 더미 데이터 ─────────────────────────────
-const PREVIEW_MODE = true;
-
-const DUMMY_CFG = {
-  inviteCode: 'GYM2025',
-  required: 2,
-  finePerMiss: 5000,
-  maxFine: 10000,
-  adminPassword: '1234',
-  resetTimestamp: 0,
-};
-
-function getDummyDate(daysAgo) {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  return d.toDateString();
-}
-
-function getDummyWeek(daysAgo) {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  return wKey(d);
-}
-
-const DUMMY_RECORDS = [
-  // 이번 주
-  {name:'홍길동', week:getDummyWeek(0), date:getDummyDate(1), duration:45, exerciseType:'러닝', timestamp:Date.now()-86400000},
-  {name:'홍길동', week:getDummyWeek(0), date:getDummyDate(3), duration:60, exerciseType:'헬스', timestamp:Date.now()-259200000},
-  {name:'김철수', week:getDummyWeek(0), date:getDummyDate(2), duration:30, exerciseType:'수영', timestamp:Date.now()-172800000},
-  {name:'이영희', week:getDummyWeek(0), date:getDummyDate(1), duration:50, exerciseType:'자전거', timestamp:Date.now()-86400000},
-  {name:'박민준', week:getDummyWeek(0), date:getDummyDate(0), duration:40, exerciseType:'러닝', timestamp:Date.now()-3600000},
-  // 지난 주
-  {name:'홍길동', week:getDummyWeek(8), date:getDummyDate(8), duration:55, exerciseType:'헬스', timestamp:Date.now()-691200000},
-  {name:'홍길동', week:getDummyWeek(9), date:getDummyDate(9), duration:40, exerciseType:'러닝', timestamp:Date.now()-777600000},
-  {name:'김철수', week:getDummyWeek(8), date:getDummyDate(8), duration:35, exerciseType:'수영', timestamp:Date.now()-691200000},
-  {name:'이영희', week:getDummyWeek(10), date:getDummyDate(10), duration:45, exerciseType:'헬스', timestamp:Date.now()-864000000},
-  {name:'최수진', week:getDummyWeek(9), date:getDummyDate(9), duration:30, exerciseType:'요가', timestamp:Date.now()-777600000},
-];
-
-const _sheetsCall = sheetsCall;
-async function sheetsCall(action, params={}) {
-  if (!PREVIEW_MODE) return _sheetsCall(action, params);
-  await new Promise(r => setTimeout(r, 300)); // 로딩 시뮬레이션
-  if (action === 'getAll') return { config: DUMMY_CFG, records: DUMMY_RECORDS };
-  if (action === 'addCert') {
-    DUMMY_RECORDS.push({
-      name: params.name, week: params.week, date: params.date,
-      duration: params.duration||0, exerciseType: params.exerciseType||null,
-      timestamp: Date.now(),
-    });
-    return { ok: true };
-  }
-  if (action === 'saveConfig') { Object.assign(DUMMY_CFG, params); return { ok: true }; }
-  return { ok: true };
-}
-
-const _analyzeImg = analyzeImg;
-async function analyzeImg(b64) {
-  if (!PREVIEW_MODE) return _analyzeImg(b64);
-  await new Promise(r => setTimeout(r, 1500));
-  return { verified: true, duration_minutes: 45, exercise_type: '러닝', exercise_date: new Date().toISOString().split('T')[0], reason: '미리보기 모드: 삼성헬스 러닝 기록 화면 확인됨' };
-}
-// ───────────────────────────────────────────────────────────────
-// ── AI 분석 호출 ──────────────────────────────────────────────
-async function analyzeImg(b64) {
-  const res = await fetch('/.netlify/functions/analyze', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image_base64: b64 }),
-  });
-  return res.json();
-}
-
-async function compressImg(file) {
-  return new Promise(res => {
-    const r = new FileReader(); r.onload = e => {
-      const img = new Image(); img.onload = () => {
-        const c = document.createElement('canvas'), M = 1024;
-        let w = img.width, h = img.height;
-        if (w > M) { h = Math.round(h*M/w); w = M; }
-        c.width = w; c.height = h; c.getContext('2d').drawImage(img,0,0,w,h);
-        res(c.toDataURL('image/jpeg',.8).split(',')[1]);
-      }; img.src = e.target.result;
-    }; r.readAsDataURL(file);
-  });
-}
-
-// ── 유틸 ─────────────────────────────────────────────────────
-const won = n => n.toLocaleString() + '원';
-function fDur(m) {
-  if (!m) return '-';
-  if (m < 60) return m + '분';
-  const h = Math.floor(m/60), r = m%60;
-  return r ? `${h}시간 ${r}분` : `${h}시간`;
-}
-const today = () => new Date().toDateString();
-
-// 두 가지 날짜 형식 파싱: "YYYY-MM-DD" 또는 "Mon May 19 2025"
-function parseRecordDate(dateStr) {
-  if (!dateStr) return null;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    const [y, m, d] = dateStr.split('-').map(Number);
-    return new Date(y, m-1, d);
-  }
-  const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? null : d;
-}
-function isoW(d) {
-  const u = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
-  const dy = u.getUTCDay()||7; u.setUTCDate(u.getUTCDate()+4-dy);
-  const y0 = new Date(Date.UTC(u.getUTCFullYear(),0,1));
+function getISOWeek(d){
+  const u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dy=u.getUTCDay()||7; u.setUTCDate(u.getUTCDate()+4-dy);
+  const y0=new Date(Date.UTC(u.getUTCFullYear(),0,1));
   return Math.ceil((((u-y0)/86400000)+1)/7);
 }
-function wKey(d=new Date()) { return `${d.getFullYear()}-W${String(isoW(d)).padStart(2,'0')}`; }
-function wBounds(k) {
-  const [y,w] = k.split('-W').map(Number);
-  const j = new Date(y,0,4), m = new Date(j);
+function wKey(d=new Date()){return`${d.getFullYear()}-W${String(getISOWeek(d)).padStart(2,'0')}`;}
+function wBounds(k){
+  const[y,w]=k.split('-W').map(Number);
+  const j=new Date(y,0,4),m=new Date(j);
   m.setDate(j.getDate()-((j.getDay()||7)-1)+(w-1)*7);
-  const s = new Date(m); s.setDate(m.getDate()+6);
-  return {mon:m, sun:s};
+  const s=new Date(m);s.setDate(m.getDate()+6);
+  return{mon:m,sun:s};
 }
-const fd = d => `${d.getMonth()+1}/${d.getDate()}`;
+const fd=d=>`${d.getMonth()+1}/${d.getDate()}`;
+const won=n=>n.toLocaleString()+'원';
+function fDur(m){if(!m)return'-';if(m<60)return m+'분';const h=Math.floor(m/60),r=m%60;return r?`${h}시간 ${r}분`:`${h}시간`;}
 
-// ── 공통 스타일 ───────────────────────────────────────────────
-const S = {
-  wrap:  {maxWidth:480, margin:'0 auto', padding:'1rem 1rem 3rem'},
-  card:  {background:'#161616', border:'1px solid #222', borderRadius:14, padding:'1.25rem', marginBottom:12},
-  tb:    {display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem'},
-  logo:  {textAlign:'center', padding:'2.5rem 0 1.5rem'},
-  lbl:   {fontSize:12, color:'#666', marginBottom:5},
-  fld:   {marginBottom:14},
-  bb:    (bg='#1e5f8e') => ({width:'100%', padding:'13px', fontSize:15, fontWeight:500, background:`linear-gradient(135deg,${bg},#0f3460)`, color:'#fff', borderRadius:10, cursor:'pointer', marginTop:8}),
-  sm:    {fontSize:12, padding:'5px 11px', background:'#1a1a1a', border:'1px solid #2a2a2a', color:'#888', borderRadius:7},
-  sec:   {fontSize:10, color:'#444', letterSpacing:2, textTransform:'uppercase', marginBottom:10},
-  err:   {fontSize:12, color:'#e05c5c', marginTop:6, minHeight:16},
-  strip: {background:'#121212', border:'1px solid #1e1e1e', borderRadius:12, padding:'12px 16px', display:'flex', justifyContent:'space-between', alignItems:'center'},
-  spin:  {textAlign:'center', padding:'3rem 0', color:'#555'},
-};
+let RECORDS = [
+  {name:'홍길동',week:wKey(),date:makeDate(1),duration:45,exerciseType:'러닝',timestamp:Date.now()-86400000},
+  {name:'홍길동',week:wKey(),date:makeDate(3),duration:60,exerciseType:'헬스',timestamp:Date.now()-259200000},
+  {name:'김철수',week:wKey(),date:makeDate(2),duration:30,exerciseType:'수영',timestamp:Date.now()-172800000},
+  {name:'이영희',week:wKey(),date:makeDate(1),duration:50,exerciseType:'자전거',timestamp:Date.now()-86400000},
+  {name:'박민준',week:wKey(),date:makeDate(0),duration:40,exerciseType:'러닝',timestamp:Date.now()-3600000},
+  {name:'최수진',week:wKey(),date:makeDate(2),duration:35,exerciseType:'요가',timestamp:Date.now()-172800000},
+  {name:'오지훈',week:wKey(),date:makeDate(4),duration:55,exerciseType:'등산',timestamp:Date.now()-345600000},
+  // 지난 주
+  {name:'홍길동',week:wKey(new Date(Date.now()-864e4*8)),date:makeDate(8),duration:55,exerciseType:'헬스',timestamp:Date.now()-691200000},
+  {name:'홍길동',week:wKey(new Date(Date.now()-864e4*9)),date:makeDate(9),duration:40,exerciseType:'러닝',timestamp:Date.now()-777600000},
+  {name:'김철수',week:wKey(new Date(Date.now()-864e4*8)),date:makeDate(8),duration:35,exerciseType:'수영',timestamp:Date.now()-691200000},
+  {name:'이영희',week:wKey(new Date(Date.now()-864e4*10)),date:makeDate(10),duration:45,exerciseType:'헬스',timestamp:Date.now()-864000000},
+  {name:'최수진',week:wKey(new Date(Date.now()-864e4*9)),date:makeDate(9),duration:30,exerciseType:'요가',timestamp:Date.now()-777600000},
+  {name:'강다혜',week:wKey(new Date(Date.now()-864e4*8)),date:makeDate(8),duration:60,exerciseType:'필라테스',timestamp:Date.now()-691200000},
+];
 
-function computeAllTimeFine(records, cfg) {
-  const resetTs = cfg.resetTimestamp || 0;
-  const thisWeek = wKey();
-  // 현재 진행중인 주는 제외 (아직 인증 기회 남아있으므로)
-  const filtered = records.filter(r => (r.timestamp||0) > resetTs && r.week !== thisWeek);
-  const weeks = [...new Set(filtered.map(r=>r.week))];
-  const names = [...new Set(filtered.map(r=>r.name))];
-  let total = 0;
-  for (const wk of weeks) {
-    for (const name of names) {
-      const rs = filtered.filter(r=>r.name===name&&r.week===wk);
-      const cnt = new Set(rs.map(r=>r.date)).size;
-      total += Math.min(Math.max(0,cfg.required-cnt)*cfg.finePerMiss, cfg.maxFine);
-    }
-  }
-  return total;
+// ── 화면 전환 ──────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if (id==='main') renderMain();
+  if (id==='admin') renderAdmin();
 }
 
-function Logo({icon,title,sub}) {
-  return <div style={S.logo}>
-    <div style={{fontSize:42,marginBottom:10}}>{icon}</div>
-    <h1 style={{fontSize:22,fontWeight:500,color:'#fff',margin:'0 0 4px'}}>{title}</h1>
-    {sub && <p style={{fontSize:13,color:'#666',margin:0}}>{sub}</p>}
-  </div>;
-}
-function Spinner({msg='불러오는 중...'}) {
-  return <div style={S.spin}><i className="ti ti-loader" style={{fontSize:28}}/><div style={{fontSize:13,marginTop:10}}>{msg}</div></div>;
+function switchTab(tab) {
+  document.getElementById('view-status').style.display  = tab==='status'  ? 'block':'none';
+  document.getElementById('view-calendar').style.display = tab==='calendar'? 'block':'none';
+  document.getElementById('tab-status').classList.toggle('active',   tab==='status');
+  document.getElementById('tab-calendar').classList.toggle('active', tab==='calendar');
+  if (tab==='calendar') renderCalendar();
 }
 
-// ── 설정 화면 ─────────────────────────────────────────────────
-function SetupScreen({onDone}) {
-  const [err,setErr] = useState(''), [busy,setBusy] = useState(false);
-  const refs = {c:useRef(),r:useRef(),f:useRef(),m:useRef(),n:useRef(),p:useRef()};
-  const submit = async () => {
-    const code = refs.c.current.value.trim().toUpperCase();
-    const name = refs.n.current.value.trim();
-    if (!code) {setErr('초대 코드를 입력하세요');return;}
-    if (!name) {setErr('이름을 입력하세요');return;}
-    const cfg = {inviteCode:code, required:+refs.r.current.value||2, finePerMiss:+refs.f.current.value||5000, maxFine:+refs.m.current.value||10000, adminPassword:refs.p.current.value.trim(), resetTimestamp:0};
-    setBusy(true);
-    try {
-      await sheetsCall('saveConfig', cfg);
-      onDone(cfg, name);
-    } catch(e) { setErr('저장 실패: '+e.message); }
-    finally { setBusy(false); }
-  };
-  return <div style={S.wrap}>
-    <Logo icon="🏃" title="뚱망 방지 위원회" sub="그룹을 처음 만들어볼게요"/>
-    <div style={S.card}>
-      <div style={S.sec}>그룹 설정</div>
-      <div style={S.fld}><div style={S.lbl}>초대 코드 (친구들에게 알려줄 코드)</div>
-        <input ref={refs.c} placeholder="예: GYM2025" style={{fontSize:17,letterSpacing:4,textTransform:'uppercase'}}/></div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:14}}>
-        <div><div style={S.lbl}>주당 필수 횟수</div><input ref={refs.r} type="number" defaultValue="2" min="1" max="7"/></div>
-        <div><div style={S.lbl}>회당 벌금(원)</div><input ref={refs.f} type="number" defaultValue="5000" step="1000"/></div>
-        <div><div style={S.lbl}>최대 벌금(원)</div><input ref={refs.m} type="number" defaultValue="10000" step="1000"/></div>
-      </div>
-      <div style={S.fld}><div style={S.lbl}>내 이름</div><input ref={refs.n} placeholder="홍길동"/></div>
-      <div style={S.fld}><div style={S.lbl}>관리자 비밀번호 (벌금 초기화 시 필요)</div>
-        <input ref={refs.p} type="password" placeholder="비밀번호 설정 (본인만 알 수 있게)"/></div>
-      <div style={S.err}>{err}</div>
-      <button style={{...S.bb(), opacity:busy?.6:1}} onClick={submit} disabled={busy}>
-        {busy ? '저장 중...' : '그룹 만들기'}
-      </button>
-    </div>
-  </div>;
-}
+// ── 메인 렌더링 ────────────────────────────────────────────────
+function renderMain() {
+  const wk = wKey();
+  const {mon,sun} = wBounds(wk);
+  document.getElementById('main-name').textContent = ME + ' 님';
+  document.getElementById('week-label').textContent = `이번 주 (${fd(mon)} ~ ${fd(sun)})`;
 
-// ── 코드 입력 ─────────────────────────────────────────────────
-function CodeScreen({cfg,onOk}) {
-  const [val,setVal] = useState(''), [err,setErr] = useState('');
-  const submit = () => {
-    if (!val.trim()) {setErr('코드를 입력하세요');return;}
-    if (val.trim().toUpperCase() !== cfg.inviteCode) {setErr('코드가 맞지 않아요');setVal('');return;}
-    onOk();
-  };
-  return <div style={S.wrap}>
-    <Logo icon="🔑" title="뚱망 방지 위원회" sub="초대 코드를 입력하세요"/>
-    <div style={S.card}>
-      <div style={S.lbl}>초대 코드</div>
-      <input value={val} onChange={e=>setVal(e.target.value.toUpperCase())} placeholder="초대 코드"
-        style={{fontSize:22,textAlign:'center',letterSpacing:5}}
-        onKeyDown={e=>e.key==='Enter'&&submit()}/>
-      <div style={S.err}>{err}</div>
-      <button style={S.bb()} onClick={submit}>입장하기</button>
-    </div>
-    <p style={{fontSize:12,color:'#444',textAlign:'center',marginTop:8}}>코드는 그룹 관리자에게 문의하세요</p>
-  </div>;
-}
+  const myR  = RECORDS.filter(r=>r.name===ME&&r.week===wk);
+  const cnt  = new Set(myR.map(r=>r.date)).size;
+  const fine = Math.min(Math.max(0,CFG.required-cnt)*CFG.finePerMiss, CFG.maxFine);
 
-// ── 이름 입력 ─────────────────────────────────────────────────
-function NameScreen({onDone}) {
-  const [val,setVal] = useState(''), [err,setErr] = useState('');
-  const submit = () => { if(!val.trim()){setErr('이름을 입력하세요');return;} onDone(val.trim()); };
-  return <div style={S.wrap}>
-    <Logo icon="👋" title="반갑습니다!" sub="이름을 알려주세요"/>
-    <div style={S.card}>
-      <div style={S.lbl}>이름</div>
-      <input value={val} onChange={e=>setVal(e.target.value)} placeholder="홍길동" style={{fontSize:16}}
-        onKeyDown={e=>e.key==='Enter'&&submit()}/>
-      <div style={S.err}>{err}</div>
-      <button style={S.bb()} onClick={submit}>시작하기</button>
-    </div>
-    <p style={{fontSize:12,color:'#444',textAlign:'center',marginTop:8}}>이름은 다른 멤버에게 표시돼요</p>
-  </div>;
-}
-
-
-// ── 달력 뷰 ──────────────────────────────────────────────────
-const MEMBER_COLORS = ['#4caf87','#7ab8e8','#e09a4c','#e05c5c','#b87de8','#78d4c8','#e878b4'];
-const DOW_KR = ['월','화','수','목','금','토','일'];
-
-function CalendarView({ records, cfg }) {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth());
-
-  const allNames = [...new Set(records.map(r=>r.name))];
-  const colorMap = {};
-  allNames.forEach((n,i) => colorMap[n] = MEMBER_COLORS[i % MEMBER_COLORS.length]);
-
-  // 날짜별 인증자 목록
-  const dateLookup = {};
-  for (const r of records) {
-    const d = parseRecordDate(r.date);
-    if (!d || d.getFullYear()!==year || d.getMonth()!==month) continue;
-    const key = d.getDate();
-    if (!dateLookup[key]) dateLookup[key] = new Set();
-    dateLookup[key].add(r.name);
+  // 내 인증 도트
+  const dotsEl = document.getElementById('my-dots');
+  dotsEl.innerHTML = '';
+  for(let i=0;i<CFG.required;i++){
+    const d=document.createElement('div');
+    d.className='dot-lg'+(i<cnt?' on':'');
+    if(i<cnt) d.innerHTML='<span style="color:#4caf87;font-size:16px">✓</span>';
+    dotsEl.appendChild(d);
   }
 
-  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7; // 월=0
-  const lastDate = new Date(year, month+1, 0).getDate();
-  const todayDate = now.getFullYear()===year && now.getMonth()===month ? now.getDate() : -1;
+  const stEl = document.getElementById('my-status');
+  stEl.textContent = cnt>=CFG.required ? '이번 주 완료! 🎉' : `${cnt}/${CFG.required}회 완료`;
+  stEl.style.color = cnt>=CFG.required?'#4caf87':fine>0?'#e09a4c':'#888';
+  document.getElementById('my-fine-msg').textContent = fine>0?`현재 예상 벌금 ${won(fine)}`:cnt>=CFG.required?'이번 주 완료 ✓':'';
 
-  const cells = [];
-  for (let i=0; i<firstDow; i++) cells.push(null);
-  for (let d=1; d<=lastDate; d++) cells.push(d);
-  while (cells.length % 7 !== 0) cells.push(null);
-
-  const prevMonth = () => { if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1); };
-  const nextMonth = () => { if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1); };
-
-  return <div>
-    {/* 월 네비게이션 */}
-    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-      <button style={{...S.sm,fontSize:16,padding:'4px 12px'}} onClick={prevMonth}>‹</button>
-      <span style={{fontSize:15,fontWeight:500,color:'#fff'}}>{year}년 {month+1}월</span>
-      <button style={{...S.sm,fontSize:16,padding:'4px 12px'}} onClick={nextMonth}>›</button>
-    </div>
-
-    {/* 요일 헤더 */}
-    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:3}}>
-      {DOW_KR.map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#555',padding:'4px 0'}}>{d}</div>)}
-    </div>
-
-    {/* 날짜 셀 */}
-    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
-      {cells.map((day,i)=>{
-        if(!day) return <div key={i}/>;
-        const certs = dateLookup[day] ? [...dateLookup[day]] : [];
-        const isToday = day===todayDate;
-        const allDone = allNames.length>0 && allNames.every(n=>dateLookup[day]?.has(n));
-        return <div key={i} style={{
-          background: allDone?'#0d2a1a':certs.length>0?'#161e16':'#141414',
-          border:`1px solid ${isToday?'#4caf87':allDone?'#1a5c2a':'#222'}`,
-          borderRadius:8,
-          padding:'4px 2px 6px',
-          minHeight:52,
-        }}>
-          <div style={{fontSize:11,textAlign:'center',color:isToday?'#4caf87':'#555',marginBottom:3}}>{day}</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:2,justifyContent:'center'}}>
-            {certs.map(n=><div key={n} style={{width:8,height:8,borderRadius:'50%',background:colorMap[n]||'#888'}} title={n}/>)}
-          </div>
-        </div>;
-      })}
-    </div>
-
-    {/* 범례 */}
-    {allNames.length>0 && <div style={{display:'flex',flexWrap:'wrap',gap:10,marginTop:14,padding:'10px 0'}}>
-      {allNames.map(n=><div key={n} style={{display:'flex',alignItems:'center',gap:5}}>
-        <div style={{width:9,height:9,borderRadius:'50%',background:colorMap[n]}}/>
-        <span style={{fontSize:12,color:'#888'}}>{n}</span>
-      </div>)}
-    </div>}
-  </div>;
-}
-
-// ── 메인 화면 ─────────────────────────────────────────────────
-function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing}) {
-  const [view, setView] = useState('status'); // 'status' | 'calendar'
-  const w = wKey(); const {mon,sun} = wBounds(w);
-  const myR = records.filter(r=>r.name===me&&r.week===w);
-  const cnt = new Set(myR.map(r=>r.date)).size;
-  const done = cnt>=cfg.required;
-  const fine = Math.min(Math.max(0,cfg.required-cnt)*cfg.finePerMiss, cfg.maxFine);
-
-  const allTimeFine = computeAllTimeFine(records, cfg);
-  const beers = Math.floor(allTimeFine / cfg.finePerMiss);
-  const names = [...new Set(records.map(r=>r.name))];
-
-  if (!names.includes(me)) names.push(me);
+  // 리더보드
+  const names = MEMBERS;
   let tf = 0;
   const rows = names.map(n=>{
-    const rs = records.filter(r=>r.name===n&&r.week===w);
-    const c = new Set(rs.map(r=>r.date)).size;
+    const rs  = RECORDS.filter(r=>r.name===n&&r.week===wk);
+    const c   = new Set(rs.map(r=>r.date)).size;
     const dur = rs.reduce((s,r)=>s+(r.duration||0),0);
-    const f = Math.min(Math.max(0,cfg.required-c)*cfg.finePerMiss, cfg.maxFine);
-    tf+=f; return{name:n,cnt:c,fine:f,dur};
+    const f   = Math.min(Math.max(0,CFG.required-c)*CFG.finePerMiss,CFG.maxFine);
+    tf += f;
+    return {name:n,cnt:c,fine:f,dur};
   }).sort((a,b)=>b.cnt-a.cnt||a.fine-b.fine);
 
-  const SmDot = ({on}) => <div style={{width:10,height:10,borderRadius:'50%',background:on?'#2a6a3a':'#222',border:`1px solid ${on?'#3a8a4a':'#333'}`}}/>;
-  const BigDot = ({on}) => <div style={{width:36,height:36,borderRadius:'50%',border:`1px solid ${on?'#2a6a3a':'#333'}`,display:'flex',alignItems:'center',justifyContent:'center',background:on?'#1a4a2a':'#111'}}>
-    {on&&<i className="ti ti-check" style={{fontSize:16,color:'#4caf87'}}/>}
-  </div>;
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = rows.map((r,i)=>{
+    const isMe = r.name===ME, ok = r.cnt>=CFG.required;
+    const fc   = ok?'#4caf87':r.fine>0?'#e05c5c':'#666';
+    const ft   = ok?'완료':r.fine>0?`-${won(r.fine)}`:`${r.cnt}/${CFG.required}`;
+    const dots = Array.from({length:CFG.required},(_,j)=>`<span class="dot-sm${j<r.cnt?' on':''}"></span>`).join('');
+    return `<div class="lb-row${isMe?' me':''}">
+      <span style="font-size:12px;color:#444;width:16px;text-align:center">${i+1}</span>
+      <span style="font-size:14px;color:#ddd;flex:1">${r.name}${isMe?' <span style="font-size:11px;color:#444">(나)</span>':''}</span>
+      <div style="display:flex;gap:3px">${dots}</div>
+      <span style="font-size:12px;color:#666;min-width:68px;text-align:center">${r.dur?fDur(r.dur):'-'}</span>
+      <span style="font-size:13px;font-weight:500;min-width:52px;text-align:right;color:${fc}">${ft}</span>
+    </div>`;
+  }).join('');
 
-  return <div style={S.wrap}>
-    <div style={S.tb}>
-      <span style={{fontSize:14,fontWeight:500,color:'#fff'}}>{me} 님</span>
-      <div style={{display:'flex',gap:6}}>
-        <button style={{...S.sm,opacity:refreshing?.5:1}} onClick={onRefresh} disabled={refreshing}>
-          <i className={`ti ti-${refreshing?'loader':'refresh'}`}/>
-        </button>
-        <button style={S.sm} onClick={onAdmin}><i className="ti ti-settings"/></button>
-        <button style={S.sm} onClick={onLogout}><i className="ti ti-logout"/></button>
-      </div>
-    </div>
+  const totEl = document.getElementById('week-total');
+  totEl.textContent = tf>0?won(tf):'모두 완료! 🎉';
+  totEl.style.color = tf>0?'#e05c5c':'#4caf87';
 
-    {/* 탭 */}
-    <div style={{display:'flex',gap:6,marginBottom:12}}>
-      <button onClick={()=>setView('status')} style={{flex:1,padding:'8px',fontSize:13,fontWeight:view==='status'?600:400,background:view==='status'?'#1e3a5f':'transparent',color:view==='status'?'#7ab8e8':'#555',border:`1px solid ${view==='status'?'#1e5f8e':'#222'}`,borderRadius:8,cursor:'pointer'}}>📊 현황</button>
-      <button onClick={()=>setView('calendar')} style={{flex:1,padding:'8px',fontSize:13,fontWeight:view==='calendar'?600:400,background:view==='calendar'?'#1e3a5f':'transparent',color:view==='calendar'?'#7ab8e8':'#555',border:`1px solid ${view==='calendar'?'#1e5f8e':'#222'}`,borderRadius:8,cursor:'pointer'}}>📅 달력</button>
-    </div>
-
-    {view==='calendar' && <div style={S.card}><CalendarView records={records} cfg={cfg}/></div>}
-
-    {view==='status' && <div style={{...S.card,textAlign:'center',padding:'1.5rem'}}>
-      <div style={{fontSize:12,color:'#555',marginBottom:10}}>이번 주 ({fd(mon)} ~ {fd(sun)})</div>
-      <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:'1rem'}}>
-        {Array.from({length:cfg.required},(_,i)=><BigDot key={i} on={i<cnt}/>)}
-      </div>
-      <div style={{fontSize:13,marginBottom:'1rem',color:cnt>=cfg.required?'#4caf87':fine>0?'#e09a4c':'#888'}}>
-        {cnt>=cfg.required?'이번 주 완료! 🎉':`${cnt}/${cfg.required}회 완료`}
-      </div>
-      <button
-        style={{...S.bb('#1e5f8e'),marginTop:0}}
-        onClick={onCert}>
-        <i className="ti ti-camera"/> 스크린샷으로 인증하기
-      </button>
-      <div style={{fontSize:12,color:'#666',marginTop:8,minHeight:16}}>
-        {fine>0?`현재 예상 벌금 ${won(fine)}`:cnt>=cfg.required?'이번 주 완료 ✓':''}
-      </div>
-    </div>}
-
-    {view==='status' && <div style={S.card}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-        <div style={S.sec}>이번 주 현황</div>
-        <div style={{display:'flex',gap:16,fontSize:11,color:'#444'}}><span>운동시간</span><span>벌금</span></div>
-      </div>
-      {rows.map((r,i)=>{
-        const isMe=r.name===me, ok=r.cnt>=cfg.required;
-        const fc=ok?'#4caf87':r.fine>0?'#e05c5c':'#666';
-        const ft=ok?'완료':r.fine>0?`-${won(r.fine)}`:`${r.cnt}/${cfg.required}`;
-        return <div key={r.name} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 1.25rem',borderBottom:'1px solid #1a1a1a',background:isMe?'#1a1a1a':'transparent',margin:'0 -1.25rem'}}>
-          <span style={{fontSize:12,color:'#444',width:16,textAlign:'center'}}>{i+1}</span>
-          <span style={{fontSize:14,color:'#ddd',flex:1}}>{r.name}{isMe&&<span style={{fontSize:11,color:'#444',marginLeft:4}}>(나)</span>}</span>
-          <div style={{display:'flex',gap:3}}>{Array.from({length:cfg.required},(_,j)=><SmDot key={j} on={j<r.cnt}/>)}</div>
-          <span style={{fontSize:12,color:'#666',minWidth:68,textAlign:'center'}}>{r.dur?fDur(r.dur):'-'}</span>
-          <span style={{fontSize:13,fontWeight:500,minWidth:52,textAlign:'right',color:fc}}>{ft}</span>
-        </div>;
-      })}
-    </div>
-
-    {view==='status' && <>
-      <div style={S.strip}>
-        <div>
-          <div style={{fontSize:12,color:'#666',marginBottom:2}}>이번 주 예상 모금액</div>
-          <div style={{fontSize:18,fontWeight:500,color:tf>0?'#e05c5c':'#4caf87'}}>{tf>0?won(tf):'모두 완료! 🎉'}</div>
-        </div>
-        <i className="ti ti-pig-money" style={{fontSize:28,color:'#333'}}/>
-      </div>
-      {beers >= 0 && <div style={{background:'#1a1400',border:'1px solid #3a3000',borderRadius:12,padding:'12px 16px',marginTop:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div>
-          <div style={{fontSize:12,color:'#888',marginBottom:2}}>누적 벌금 펀드</div>
-          <div style={{fontSize:16,fontWeight:500,color:'#f0c040'}}>🍺 맥주 {beers}잔 적립 중</div>
-          <div style={{fontSize:11,color:'#666',marginTop:2}}>{won(allTimeFine)} 누적 (잔당 {won(cfg.finePerMiss)})</div>
-        </div>
-      </div>}
-    </>}
-  </div>;
-}
-
-// ── 인증 화면 ─────────────────────────────────────────────────
-function CertScreen({onCancel,onConfirm}) {
-  const [st,setSt] = useState('upload'); // upload|loading|result|saving
-  const [preview,setPreview] = useState(null);
-  const [result,setResult] = useState(null);
-  const fileRef = useRef();
-
-  const handleFile = async e => {
-    const file = e.target.files[0]; if(!file) return;
-    const r2=new FileReader(); r2.onload=ev=>setPreview(ev.target.result); r2.readAsDataURL(file);
-    setSt('loading');
-    try {
-      const b64 = await compressImg(file);
-      const res = await analyzeImg(b64);
-      setResult(res); setSt('result');
-    } catch(err) {
-      setResult({verified:false,reason:'분석 오류: '+err.message}); setSt('result');
+  // 맥주 펀드 (지난 주들만)
+  const thisWk = wKey();
+  const resetTs = CFG.resetTimestamp||0;
+  const pastRecs = RECORDS.filter(r=>(r.timestamp||0)>resetTs && r.week!==thisWk);
+  const pastWeeks = [...new Set(pastRecs.map(r=>r.week))];
+  let allTimeFine = 0;
+  for(const pw of pastWeeks){
+    for(const n of MEMBERS){
+      const rs = pastRecs.filter(r=>r.name===n&&r.week===pw);
+      const c  = new Set(rs.map(r=>r.date)).size;
+      allTimeFine += Math.min(Math.max(0,CFG.required-c)*CFG.finePerMiss,CFG.maxFine);
     }
-  };
-
-  const confirm = async () => {
-    setSt('saving');
-    await onConfirm(result.duration_minutes||0, result.exercise_type||null, result.exercise_date||null);
-  };
-  const retry = () => { setSt('upload'); setPreview(null); if(fileRef.current) fileRef.current.value=''; };
-
-  return <div style={S.wrap}>
-    <div style={S.tb}>
-      <button style={S.sm} onClick={onCancel}><i className="ti ti-arrow-left"/> 취소</button>
-      <span style={{fontSize:14,fontWeight:500,color:'#fff'}}>운동 인증</span>
-      <div style={{width:50}}/>
-    </div>
-
-    {preview && <div style={{marginBottom:12}}><img src={preview} style={{width:'100%',borderRadius:12,maxHeight:240,objectFit:'cover'}}/></div>}
-
-    {st==='upload'&&<div onClick={()=>fileRef.current.click()}
-      style={{textAlign:'center',padding:'2.5rem 1rem',cursor:'pointer',border:'1.5px dashed #2a2a2a',borderRadius:14,marginBottom:12}}>
-      <i className="ti ti-upload" style={{fontSize:36,color:'#444'}}/>
-      <div style={{fontSize:15,fontWeight:500,margin:'10px 0 4px',color:'#ccc'}}>운동 앱 스크린샷 업로드</div>
-      <div style={{fontSize:12,color:'#555'}}>삼성헬스 · 애플피트니스 · 나이키런 · 스트라바 · 가민</div>
-    </div>}
-
-    {(st==='loading'||st==='saving')&&<div style={{...S.card,textAlign:'center',padding:'2rem'}}>
-      <i className="ti ti-loader" style={{fontSize:28,color:'#666'}}/>
-      <div style={{fontSize:13,color:'#777',marginTop:10}}>
-        {st==='loading'?'Haiku AI가 운동 기록을 분석 중이에요...':'인증을 저장하는 중이에요...'}
-      </div>
-    </div>}
-
-    {st==='result'&&result&&(result.verified ? <>
-      <div style={{background:'#0d2a1a',border:'1px solid #1a5c2a',borderRadius:12,padding:'12px 14px',marginBottom:10}}>
-        <div style={{fontSize:14,fontWeight:500,color:'#4caf87',marginBottom:6}}><i className="ti ti-circle-check"/> 운동 인증 확인됨</div>
-        {result.exercise_type&&<div style={{fontSize:13,color:'#4caf87'}}>종류: {result.exercise_type}</div>}
-          {result.exercise_date&&<div style={{fontSize:13,color:'#4caf87'}}>운동 날짜: {result.exercise_date}</div>}
-        {result.duration_minutes&&<div style={{fontSize:13,color:'#4caf87'}}>운동 시간: {fDur(result.duration_minutes)}</div>}
-        <div style={{fontSize:12,color:'#4caf87',marginTop:4,opacity:.8}}>{result.reason}</div>
-      </div>
-      <button style={S.bb('#1a5c2a')} onClick={confirm}>인증 완료하기</button>
-    </> : <>
-      <div style={{background:'#2a1010',border:'1px solid #5c1a1a',borderRadius:12,padding:'12px 14px',marginBottom:10}}>
-        <div style={{fontSize:14,fontWeight:500,color:'#e05c5c',marginBottom:6}}><i className="ti ti-x"/> 운동 기록을 확인할 수 없어요</div>
-        <div style={{fontSize:13,color:'#e05c5c'}}>{result.reason||'운동 앱 스크린샷이 아닌 것 같아요'}</div>
-      </div>
-      <button style={S.bb()} onClick={retry}>다시 시도</button>
-      <p style={{fontSize:12,color:'#444',textAlign:'center',marginTop:8}}>삼성헬스, 스트라바, 나이키런 등 운동 완료 화면을 캡처해 주세요</p>
-    </>)}
-
-    <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleFile}/>
-  </div>;
+  }
+  const beers = Math.floor(allTimeFine/CFG.finePerMiss);
+  document.getElementById('beer-text').textContent = `🍺 맥주 ${beers}잔 적립 중`;
+  document.getElementById('beer-sub').textContent  = `${won(allTimeFine)} 누적 (잔당 ${won(CFG.finePerMiss)})`;
 }
 
-// ── 벌금 초기화 모달 ─────────────────────────────────────────
-function ResetModal({cfg, onClose, onReset}) {
-  const [pw, setPw] = useState('');
-  const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(false);
-  const doReset = async () => {
-    if (!cfg.adminPassword) { setErr('관리자 비밀번호가 설정되지 않았어요. 구글 시트 config탭 E2에 비밀번호를 입력하세요.'); return; }
-    if (pw !== cfg.adminPassword) { setErr('비밀번호가 맞지 않아요'); return; }
-    setBusy(true);
-    try {
-      const nc = {...cfg, resetTimestamp: Date.now()};
-      await sheetsCall('saveConfig', nc);
-      onReset(nc);
-      alert('벌금이 초기화됐어요! 🍺 술 한잔 하세요!');
-      onClose();
-    } catch(e) { setErr('오류: '+e.message); }
-    finally { setBusy(false); }
-  };
-  return <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999,padding:'1rem'}}>
-    <div style={{background:'#1a1a1a',border:'1px solid #333',borderRadius:16,padding:'1.5rem',width:'100%',maxWidth:360}}>
-      <div style={{fontSize:16,fontWeight:500,color:'#fff',marginBottom:8}}>🍺 벌금 초기화</div>
-      <div style={{fontSize:13,color:'#888',marginBottom:16}}>
-        현재까지 누적된 벌금 기록을 초기화합니다.<br/>
-        기존 기록은 삭제되지 않아요.
-      </div>
-      <div style={S.lbl}>관리자 비밀번호</div>
-      <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="비밀번호 입력" style={{marginBottom:8}}/>
-      <div style={S.err}>{err}</div>
-      <div style={{display:'flex',gap:8,marginTop:8}}>
-        <button style={{flex:1,padding:'11px',fontSize:14,background:'#222',border:'1px solid #333',color:'#888',borderRadius:8,cursor:'pointer'}} onClick={onClose}>취소</button>
-        <button style={{...S.bb('#8b1a1a'),flex:1,marginTop:0,opacity:busy?.5:1}} onClick={doReset} disabled={busy}>
-          {busy?'처리 중...':'초기화하기'}
-        </button>
-      </div>
-    </div>
-  </div>;
+// ── 달력 렌더링 ────────────────────────────────────────────────
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+function calNav(dir) {
+  calMonth += dir;
+  if(calMonth<0){calMonth=11;calYear--;}
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
 }
 
-// ── 관리자 화면 ───────────────────────────────────────────────
-function AdminScreen({cfg, records, me, onBack, onCfgSaved, onNameChange}) {
-  const [newCode, setNewCode] = useState('');
-  const [req,  setReq]  = useState(String(cfg.required));
-  const [fine, setFine] = useState(String(cfg.finePerMiss));
-  const [max,  setMax]  = useState(String(cfg.maxFine));
-  const [err,  setErr]  = useState('');
-  const [busy, setBusy] = useState(false);
-  const [showReset, setShowReset] = useState(false);
-  const [localCfg, setLocalCfg] = useState(cfg);
+function renderCalendar() {
+  document.getElementById('cal-title').textContent = `${calYear}년 ${calMonth+1}월`;
+  const today = new Date();
+  const firstDow = (new Date(calYear,calMonth,1).getDay()+6)%7;
+  const lastDate = new Date(calYear,calMonth+1,0).getDate();
+  const todayDate = today.getFullYear()===calYear&&today.getMonth()===calMonth ? today.getDate() : -1;
 
-  // 이름 변경
-  const [newName, setNewName] = useState('');
-  const [nameErr, setNameErr] = useState('');
+  // 날짜별 인증자
+  const lookup = {};
+  for(const r of RECORDS){
+    let d = new Date(r.date);
+    if(isNaN(d.getTime())) { const m=r.date.match(/(\d{4})-(\d{2})-(\d{2})/); if(m)d=new Date(+m[1],+m[2]-1,+m[3]); }
+    if(d.getFullYear()!==calYear||d.getMonth()!==calMonth) continue;
+    const key = d.getDate();
+    if(!lookup[key]) lookup[key]=new Set();
+    lookup[key].add(r.name);
+  }
 
-  const weeks = [...new Set(records.map(r=>r.week))].sort().reverse();
-  const names = [...new Set(records.map(r=>r.name))];
-  const cT={},cF={};names.forEach(n=>{cT[n]=0;cF[n]=0;});
+  const cells=[];
+  for(let i=0;i<firstDow;i++) cells.push(null);
+  for(let d=1;d<=lastDate;d++) cells.push(d);
+  while(cells.length%7!==0) cells.push(null);
 
-  const changeName = () => {
-    const n = newName.trim();
-    if (!n) { setNameErr('이름을 입력하세요'); return; }
-    if (n === me) { setNameErr('현재 이름과 같아요'); return; }
-    onNameChange(n);
-    setNewName('');
-    setNameErr('');
-    alert(`이름이 "${n}"으로 변경됐어요!`);
-  };
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = cells.map(day=>{
+    if(!day) return '<div></div>';
+    const certs = lookup[day]?[...lookup[day]]:[];
+    const isToday = day===todayDate;
+    const allDone = MEMBERS.length>0&&MEMBERS.every(n=>lookup[day]?.has(n));
+    const cls = isToday?'cal-cell today':allDone?'cal-cell all-done':certs.length>0?'cal-cell has-cert':'cal-cell';
+    const dots = certs.map(n=>`<div class="member-dot" style="background:${colorMap[n]||'#888'}" title="${n}"></div>`).join('');
+    return `<div class="${cls}">
+      <div class="cal-day${isToday?' today':''}">${day}</div>
+      <div class="cert-dots">${dots}</div>
+    </div>`;
+  }).join('');
 
-  const changeCode = async () => {
-    const code = newCode.trim().toUpperCase();
-    if (!code) { setErr('새 코드를 입력하세요'); return; }
-    // 코드가 이름처럼 생겼으면 경고
-    if (code.length <= 4 && /^[가-힣]+$/.test(code)) {
-      if (!window.confirm(`"${code}"를 초대 코드로 설정할까요?
-(이름이 아닌 그룹 코드로 사용돼요)`)) return;
-    }
-    setBusy(true);
-    try {
-      const nc = {...localCfg, inviteCode: code};
-      await sheetsCall('saveConfig', nc);
-      setLocalCfg(nc); onCfgSaved(nc);
-      alert(`초대 코드가 "${code}"로 변경됐어요!
-기존 멤버들에게 새 코드를 알려주세요.`);
-      setNewCode(''); setErr('');
-    } catch(e) { setErr('오류: '+e.message); }
-    finally { setBusy(false); }
-  };
-
-  const saveRules = async () => {
-    setBusy(true);
-    try {
-      const nc = {...localCfg, required:+req||2, finePerMiss:+fine||5000, maxFine:+max||10000};
-      await sheetsCall('saveConfig', nc);
-      setLocalCfg(nc); onCfgSaved(nc);
-      alert('저장됐어요!');
-    } catch(e) { alert('오류: '+e.message); }
-    finally { setBusy(false); }
-  };
-
-  return <div style={S.wrap}>
-    {showReset && <ResetModal cfg={localCfg} onClose={()=>setShowReset(false)} onReset={nc=>{setLocalCfg(nc);onCfgSaved(nc);}}/>}
-    <div style={S.tb}>
-      <button style={S.sm} onClick={onBack}><i className="ti ti-arrow-left"/> 돌아가기</button>
-      <span style={{fontSize:14,fontWeight:500,color:'#fff'}}>그룹 설정</span>
-      <div style={{width:60}}/>
-    </div>
-
-    {/* 내 이름 변경 */}
-    <div style={S.card}>
-      <div style={S.sec}>내 이름 변경</div>
-      <div style={{fontSize:13,color:'#666',marginBottom:4}}>현재 이름: <strong style={{color:'#ccc'}}>{me}</strong></div>
-      <div style={{fontSize:11,color:'#555',background:'#111',padding:'6px 10px',borderRadius:6,marginBottom:8}}>
-        ℹ️ 이름 변경 후 기존 인증 기록은 이전 이름으로 남아요. 기록 통일이 필요하면 구글 시트에서 직접 수정하세요.
-      </div>
-      <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="새 이름 입력" style={{fontSize:14}}/>
-      <div style={S.err}>{nameErr}</div>
-      <button style={{...S.bb(),marginTop:8}} onClick={changeName}>이름 변경</button>
-    </div>
-
-    {/* 초대 코드 변경 */}
-    <div style={S.card}>
-      <div style={S.sec}>초대 코드 변경</div>
-      <div style={{fontSize:13,color:'#666',marginBottom:4}}>현재: <strong style={{color:'#aaa',letterSpacing:3}}>{localCfg.inviteCode}</strong></div>
-      <div style={{fontSize:11,color:'#664',background:'#1a1800',padding:'6px 10px',borderRadius:6,marginBottom:8}}>
-        ⚠️ 이름 변경은 위 "내 이름 변경"을 사용하세요. 여기는 그룹 입장 코드만 변경하는 곳이에요.
-      </div>
-      <input value={newCode} onChange={e=>setNewCode(e.target.value.toUpperCase())} placeholder="새 초대 코드 (예: GYM2025)" style={{letterSpacing:3,fontSize:15}}/>
-      <div style={{fontSize:11,color:'#555',marginTop:4}}>코드 변경 시 모든 멤버가 재로그인 필요해요</div>
-      <button style={{...S.bb(),opacity:busy?.5:1,marginTop:8}} onClick={changeCode} disabled={busy}>코드 변경</button>
-      <div style={S.err}>{err}</div>
-    </div>
-
-    {/* 규칙 변경 */}
-    <div style={S.card}>
-      <div style={S.sec}>규칙 변경</div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:8}}>
-        <div><div style={S.lbl}>필수 횟수</div><input type="number" value={req} onChange={e=>setReq(e.target.value)} min="1" max="7"/></div>
-        <div><div style={S.lbl}>회당 벌금</div><input type="number" value={fine} onChange={e=>setFine(e.target.value)} step="1000"/></div>
-        <div><div style={S.lbl}>최대 벌금</div><input type="number" value={max} onChange={e=>setMax(e.target.value)} step="1000"/></div>
-      </div>
-      <button style={{...S.bb(),opacity:busy?.5:1}} onClick={saveRules} disabled={busy}>저장</button>
-    </div>
-
-    {/* 벌금 초기화 */}
-    <div style={{...S.card,border:'1px solid #3a1a1a'}}>
-      <div style={S.sec}>🍺 벌금 초기화</div>
-      <div style={{fontSize:13,color:'#888',marginBottom:10}}>누적된 벌금을 0으로 리셋해요. 관리자 비밀번호가 필요해요.</div>
-      <button style={{...S.bb('#8b1a1a'),marginTop:0}} onClick={()=>setShowReset(true)}>초기화하기</button>
-    </div>
-
-  <div style={S.card}>
-      <div style={S.sec}>누적 기록 · 정산</div>
-      {!weeks.length
-        ? <div style={{fontSize:13,color:'#444',textAlign:'center',padding:'1rem'}}>아직 기록이 없어요</div>
-        : <>
-          <div style={{display:'flex',justifyContent:'flex-end',fontSize:11,color:'#444',paddingBottom:6}}>
-            <span style={{minWidth:70,textAlign:'center'}}>운동시간</span>
-            <span style={{minWidth:60,textAlign:'right'}}>벌금</span>
-          </div>
-          {weeks.map(k=>{
-            const{mon,sun}=wBounds(k);
-            return <div key={k} style={{marginBottom:14}}>
-              <div style={{fontSize:11,color:'#444',marginBottom:4,paddingBottom:4,borderBottom:'1px solid #1e1e1e'}}>{fd(mon)} ~ {fd(sun)}</div>
-              {names.map(n=>{
-                const rs=records.filter(r=>r.name===n&&r.week===k);
-                const c=new Set(rs.map(r=>r.date)).size;
-                const dur=rs.reduce((s,r)=>s+(r.duration||0),0);
-                const f=Math.min(Math.max(0,cfg.required-c)*cfg.finePerMiss,cfg.maxFine);
-                cT[n]+=dur;cF[n]+=f;
-                const ok=c>=cfg.required;
-                return <div key={n} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:'1px solid #1a1a1a',fontSize:13}}>
-                  <span style={{color:'#ccc'}}>{n}</span>
-                  <span style={{color:'#666',minWidth:70,textAlign:'center'}}>{fDur(dur)}</span>
-                  <span style={{fontWeight:500,minWidth:60,textAlign:'right',color:ok?'#4caf87':f>0?'#e05c5c':'#666'}}>{ok?'완료':f>0?`-${won(f)}`:`${c}/${cfg.required}`}</span>
-                </div>;
-              })}
-            </div>;
-          })}
-          <div style={{borderTop:'1px solid #222',paddingTop:10,marginTop:4}}>
-            <div style={{fontSize:11,color:'#444',marginBottom:6}}>누적 합계</div>
-            {names.map(n=><div key={n} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:'1px solid #1a1a1a',fontSize:13}}>
-              <span style={{fontWeight:500,color:'#ccc'}}>{n}</span>
-              <span style={{color:'#666',minWidth:70,textAlign:'center'}}>{fDur(cT[n])}</span>
-              <span style={{fontWeight:500,minWidth:60,textAlign:'right',color:cF[n]>0?'#e05c5c':'#4caf87'}}>{cF[n]>0?`-${won(cF[n])}`:'0원'}</span>
-            </div>)}
-          </div>
-        </>
-      }
-    </div>
-  </div>;
+  // 범례
+  document.getElementById('cal-legend').innerHTML = MEMBERS.map(n=>
+    `<div class="legend-item"><div class="member-dot" style="background:${colorMap[n]};width:9px;height:9px;border-radius:50%"></div>${n}</div>`
+  ).join('');
 }
 
-// ── 앱 루트 ──────────────────────────────────────────────────
-function App() {
-  const [screen,  setScreen]  = useState('loading');
-  const [cfg,     setCfg]     = useState(null);
-  const [records, setRecords] = useState([]);
-  const [me,      setMe]      = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-
-  // 앱 로드 시 Sheets에서 데이터 가져오기
-  useEffect(() => {
-    let auth = LS.get(AK);
-    if (PREVIEW_MODE && !auth?.verified) {
-      auth = { name: '나 (미리보기)', verified: true };
-      LS.set(AK, auth);
-    }
-    if (auth?.verified) setMe(auth.name);
-    sheetsCall('getAll')
-      .then(({config,records}) => {
-        setRecords(records || []);
-        if (!config) {
-          setScreen('setup');
-        } else {
-          setCfg(config);
-          setScreen(auth?.verified ? 'main' : 'code');
-        }
-      })
-      .catch(e => {
-        console.error(e);
-        setScreen('error');
-      });
-  }, []);
-
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      const {config,records} = await sheetsCall('getAll');
-      if (config) setCfg(config);
-      setRecords(records || []);
-    } catch(e) { alert('새로고침 실패: '+e.message); }
-    finally { setRefreshing(false); }
-  };
-
-  const login = (name) => { setMe(name); LS.set(AK,{name,verified:true}); };
-  const logout = () => { setMe(''); LS.set(AK,{name:'',verified:false}); setScreen('code'); };
-
-  if (screen==='loading') return <div style={S.wrap}><Logo icon="🏃" title="뚱망 방지 위원회"/><Spinner msg="Google Sheets에서 불러오는 중..."/></div>;
-  if (screen==='error')   return <div style={S.wrap}>
-    <Logo icon="⚠️" title="연결 오류" sub="Google Sheets 연결에 실패했어요"/>
-    <div style={{...S.card,textAlign:'center',padding:'1.5rem'}}>
-      <div style={{fontSize:13,color:'#888',marginBottom:16}}>
-        Netlify 환경변수(GOOGLE_SERVICE_ACCOUNT, SPREADSHEET_ID)를 확인하세요
-      </div>
-      <button style={S.bb()} onClick={()=>{ setScreen('loading'); sheetsCall('getAll').then(({config,records})=>{ setRecords(records||[]); if(!config){setScreen('setup');}else{setCfg(config);const auth=LS.get(AK);setScreen(auth?.verified?'main':'code');} }).catch(()=>setScreen('error')); }}>
-        다시 시도
-      </button>
-    </div>
-  </div>;
-  if (screen==='setup')   return <SetupScreen onDone={(cfg,name)=>{ setCfg(cfg); login(name); setScreen('main'); }}/>;
-  if (screen==='code')    return <CodeScreen cfg={cfg} onOk={()=>setScreen('name')}/>;
-  if (screen==='name')    return <NameScreen onDone={name=>{ login(name); setScreen('main'); }}/>;
-  if (screen==='cert')    return <CertScreen
-    onCancel={()=>setScreen('main')}
-    onConfirm={async (dur,exType,exDate)=>{
-      const certDate = exDate || today();
-      const certWeek = exDate ? wKey(new Date(exDate)) : wKey();
-      await sheetsCall('addCert',{name:me,week:certWeek,date:certDate,exerciseType:exType,duration:dur});
-      await refresh();
-      setScreen('main');
-    }}
-  />;
-  if (screen==='admin')   return <AdminScreen cfg={cfg} records={records} me={me} onBack={()=>setScreen('main')} onCfgSaved={c=>{setCfg(c);}} onNameChange={name=>{login(name);}} />;
-
-  return <MainScreen cfg={cfg} records={records} me={me}
-    onCert={()=>setScreen('cert')}
-    onLogout={logout}
-    onAdmin={()=>setScreen('admin')}
-    onRefresh={refresh}
-    refreshing={refreshing}
-  />;
+// ── 인증 시뮬레이션 ────────────────────────────────────────────
+function simulateCert() {
+  document.getElementById('cert-loading').style.display='block';
+  const today=new Date();
+  document.getElementById('cert-date').textContent=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  setTimeout(()=>{
+    document.getElementById('cert-loading').style.display='none';
+    document.getElementById('cert-result').style.display='block';
+  },1200);
+}
+function confirmCert() {
+  RECORDS.push({name:ME,week:wKey(),date:new Date().toDateString(),duration:45,exerciseType:'러닝',timestamp:Date.now()});
+  document.getElementById('cert-result').style.display='none';
+  showScreen('main');
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+// ── 관리자 화면 ────────────────────────────────────────────────
+function renderAdmin() {
+  document.getElementById('admin-my-name').textContent = ME;
+  document.getElementById('cur-code').textContent = CFG.inviteCode;
+  document.getElementById('req-input').value  = CFG.required;
+  document.getElementById('fine-input').value = CFG.finePerMiss;
+  document.getElementById('max-input').value  = CFG.maxFine;
+
+  const weeks = [...new Set(RECORDS.map(r=>r.week))].sort().reverse();
+  const cT={},cF={};MEMBERS.forEach(n=>{cT[n]=0;cF[n]=0;});
+
+  let html = weeks.map(wk=>{
+    const{mon,sun}=wBounds(wk);
+    const rows = MEMBERS.map(n=>{
+      const rs=RECORDS.filter(r=>r.name===n&&r.week===wk);
+      const c=new Set(rs.map(r=>r.date)).size;
+      const dur=rs.reduce((s,r)=>s+(r.duration||0),0);
+      const f=Math.min(Math.max(0,CFG.required-c)*CFG.finePerMiss,CFG.maxFine);
+      cT[n]+=dur;cF[n]+=f;
+      if(!c&&!dur) return '';
+      const ok=c>=CFG.required;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:13px">
+        <span style="color:#ccc">${n}</span>
+        <span style="color:#666;min-width:70px;text-align:center">${fDur(dur)}</span>
+        <span style="font-weight:500;min-width:60px;text-align:right;color:${ok?'#4caf87':f>0?'#e05c5c':'#666'}">${ok?'완료':f>0?`-${won(f)}`:`${c}/${CFG.required}`}</span>
+      </div>`;
+    }).filter(Boolean).join('');
+    if(!rows) return '';
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#444;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #1e1e1e">${fd(mon)} ~ ${fd(sun)}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  html += `<div style="border-top:1px solid #222;padding-top:10px;margin-top:4px">
+    <div style="font-size:11px;color:#444;margin-bottom:6px">누적 합계</div>
+    ${MEMBERS.filter(n=>cT[n]||cF[n]).map(n=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1a1a1a;font-size:13px">
+        <span style="font-weight:500;color:#ccc">${n}</span>
+        <span style="color:#666;min-width:70px;text-align:center">${fDur(cT[n])}</span>
+        <span style="font-weight:500;min-width:60px;text-align:right;color:${cF[n]>0?'#e05c5c':'#4caf87'}">${cF[n]>0?`-${won(cF[n])}`:'0원'}</span>
+      </div>`).join('')}
+  </div>`;
+
+  document.getElementById('admin-history').innerHTML = html || '<div style="font-size:13px;color:#444;text-align:center;padding:1rem">아직 기록이 없어요</div>';
+}
+
+function changeName() {
+  const n=document.getElementById('new-name-input').value.trim();
+  if(!n){document.getElementById('name-err').textContent='이름을 입력하세요';return;}
+  if(n===ME){document.getElementById('name-err').textContent='현재 이름과 같아요';return;}
+  ME=n;
+  document.getElementById('name-err').textContent='';
+  document.getElementById('new-name-input').value='';
+  alert(`이름이 "${n}"으로 변경됐어요!`);
+  renderAdmin();
+}
+function changeCode() {
+  const c=document.getElementById('new-code-input').value.trim().toUpperCase();
+  if(!c){document.getElementById('code-err').textContent='새 코드를 입력하세요';return;}
+  CFG.inviteCode=c;
+  document.getElementById('cur-code').textContent=c;
+  document.getElementById('new-code-input').value='';
+  document.getElementById('code-err').textContent='';
+  alert(`초대 코드가 "${c}"로 변경됐어요!`);
+}
+function saveRules() {
+  CFG.required    = parseInt(document.getElementById('req-input').value)||2;
+  CFG.finePerMiss = parseInt(document.getElementById('fine-input').value)||5000;
+  CFG.maxFine     = parseInt(document.getElementById('max-input').value)||10000;
+  alert('저장됐어요!');
+}
+function showResetModal(){document.getElementById('reset-modal').style.display='flex';}
+function hideResetModal(){document.getElementById('reset-modal').style.display='none';document.getElementById('reset-pw').value='';document.getElementById('reset-err').textContent='';}
+function doReset(){
+  if(!CFG.adminPassword){document.getElementById('reset-err').textContent='관리자 비밀번호가 설정되지 않았어요';return;}
+  const pw=document.getElementById('reset-pw').value;
+  if(pw!==CFG.adminPassword){document.getElementById('reset-err').textContent='비밀번호가 맞지 않아요';return;}
+  CFG.resetTimestamp=Date.now();
+  hideResetModal();
+  alert('벌금이 초기화됐어요! 🍺 술 한잔 하세요!');
+  renderMain();
+}
+
+// 초기 렌더링
+renderMain();
 </script>
 </body>
 </html>
