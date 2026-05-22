@@ -125,7 +125,9 @@ const S = {
 
 function computeAllTimeFine(records, cfg) {
   const resetTs = cfg.resetTimestamp || 0;
-  const filtered = records.filter(r => (r.timestamp||0) > resetTs);
+  const thisWeek = wKey();
+  // 현재 진행중인 주는 제외 (아직 인증 기회 남아있으므로)
+  const filtered = records.filter(r => (r.timestamp||0) > resetTs && r.week !== thisWeek);
   const weeks = [...new Set(filtered.map(r=>r.week))];
   const names = [...new Set(filtered.map(r=>r.name))];
   let total = 0;
@@ -315,7 +317,6 @@ function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing
   const w = wKey(); const {mon,sun} = wBounds(w);
   const myR = records.filter(r=>r.name===me&&r.week===w);
   const cnt = new Set(myR.map(r=>r.date)).size;
-  const tdDone = myR.some(r=>r.date===today());
   const done = cnt>=cfg.required;
   const fine = Math.min(Math.max(0,cfg.required-cnt)*cfg.finePerMiss, cfg.maxFine);
 
@@ -491,6 +492,7 @@ function ResetModal({cfg, onClose, onReset}) {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const doReset = async () => {
+    if (!cfg.adminPassword) { setErr('관리자 비밀번호가 설정되지 않았어요. 구글 시트 config탭 E2에 비밀번호를 입력하세요.'); return; }
     if (pw !== cfg.adminPassword) { setErr('비밀번호가 맞지 않아요'); return; }
     setBusy(true);
     try {
@@ -717,7 +719,17 @@ function App() {
   const logout = () => { setMe(''); LS.set(AK,{name:'',verified:false}); setScreen('code'); };
 
   if (screen==='loading') return <div style={S.wrap}><Logo icon="🏃" title="뚱망 방지 위원회"/><Spinner msg="Google Sheets에서 불러오는 중..."/></div>;
-  if (screen==='error')   return <div style={S.wrap}><Logo icon="⚠️" title="연결 오류" sub="Netlify 환경변수(GOOGLE_SERVICE_ACCOUNT, SPREADSHEET_ID)를 확인하세요"/></div>;
+  if (screen==='error')   return <div style={S.wrap}>
+    <Logo icon="⚠️" title="연결 오류" sub="Google Sheets 연결에 실패했어요"/>
+    <div style={{...S.card,textAlign:'center',padding:'1.5rem'}}>
+      <div style={{fontSize:13,color:'#888',marginBottom:16}}>
+        Netlify 환경변수(GOOGLE_SERVICE_ACCOUNT, SPREADSHEET_ID)를 확인하세요
+      </div>
+      <button style={S.bb()} onClick={()=>{ setScreen('loading'); sheetsCall('getAll').then(({config,records})=>{ setRecords(records||[]); if(!config){setScreen('setup');}else{setCfg(config);const auth=LS.get(AK);setScreen(auth?.verified?'main':'code');} }).catch(()=>setScreen('error')); }}>
+        다시 시도
+      </button>
+    </div>
+  </div>;
   if (screen==='setup')   return <SetupScreen onDone={(cfg,name)=>{ setCfg(cfg); login(name); setScreen('main'); }}/>;
   if (screen==='code')    return <CodeScreen cfg={cfg} onOk={()=>setScreen('name')}/>;
   if (screen==='name')    return <NameScreen onDone={name=>{ login(name); setScreen('main'); }}/>;
