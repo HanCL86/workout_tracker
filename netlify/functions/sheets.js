@@ -88,10 +88,12 @@ exports.handler = async (event) => {
         const i = k => h.indexOf(k);
         const code = v[i('inviteCode')];
         if (code) config = {
-          inviteCode:  code,
-          required:    parseInt(v[i('required')])    || 2,
-          finePerMiss: parseInt(v[i('finePerMiss')]) || 5000,
-          maxFine:     parseInt(v[i('maxFine')])     || 10000,
+          inviteCode:     code,
+          required:       parseInt(v[i('required')])       || 2,
+          finePerMiss:    parseInt(v[i('finePerMiss')])    || 5000,
+          maxFine:        parseInt(v[i('maxFine')])        || 10000,
+          adminPassword:  v[i('adminPassword')]            || '',
+          resetTimestamp: parseInt(v[i('resetTimestamp')]) || 0,
         };
       }
 
@@ -118,9 +120,9 @@ exports.handler = async (event) => {
 
     // ── saveConfig: 설정 저장 (최초 설정 & 변경 모두) ─────────
     if (body.action === 'saveConfig') {
-      await writeRange(token, 'config!A1:D2', [
-        ['inviteCode', 'required', 'finePerMiss', 'maxFine'],
-        [body.inviteCode, body.required, body.finePerMiss, body.maxFine],
+      await writeRange(token, 'config!A1:F2', [
+        ['inviteCode', 'required', 'finePerMiss', 'maxFine', 'adminPassword', 'resetTimestamp'],
+        [body.inviteCode, body.required, body.finePerMiss, body.maxFine, body.adminPassword||'', body.resetTimestamp||0],
       ]);
       // 인증기록 헤더 없으면 생성
       const rh = await readRange(token, 'records!A1:F1');
