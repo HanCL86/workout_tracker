@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏃 뚱망방지위원회</title>
+<title>🏃 뚱망 방지 위원회</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -112,6 +112,22 @@ const S = {
   spin:  {textAlign:'center', padding:'3rem 0', color:'#555'},
 };
 
+function computeAllTimeFine(records, cfg) {
+  const resetTs = cfg.resetTimestamp || 0;
+  const filtered = records.filter(r => (r.timestamp||0) > resetTs);
+  const weeks = [...new Set(filtered.map(r=>r.week))];
+  const names = [...new Set(filtered.map(r=>r.name))];
+  let total = 0;
+  for (const wk of weeks) {
+    for (const name of names) {
+      const rs = filtered.filter(r=>r.name===name&&r.week===wk);
+      const cnt = new Set(rs.map(r=>r.date)).size;
+      total += Math.min(Math.max(0,cfg.required-cnt)*cfg.finePerMiss, cfg.maxFine);
+    }
+  }
+  return total;
+}
+
 function Logo({icon,title,sub}) {
   return <div style={S.logo}>
     <div style={{fontSize:42,marginBottom:10}}>{icon}</div>
@@ -126,13 +142,13 @@ function Spinner({msg='불러오는 중...'}) {
 // ── 설정 화면 ─────────────────────────────────────────────────
 function SetupScreen({onDone}) {
   const [err,setErr] = useState(''), [busy,setBusy] = useState(false);
-  const refs = {c:useRef(),r:useRef(),f:useRef(),m:useRef(),n:useRef()};
+  const refs = {c:useRef(),r:useRef(),f:useRef(),m:useRef(),n:useRef(),p:useRef()};
   const submit = async () => {
     const code = refs.c.current.value.trim().toUpperCase();
     const name = refs.n.current.value.trim();
     if (!code) {setErr('초대 코드를 입력하세요');return;}
     if (!name) {setErr('이름을 입력하세요');return;}
-    const cfg = {inviteCode:code, required:+refs.r.current.value||2, finePerMiss:+refs.f.current.value||5000, maxFine:+refs.m.current.value||10000};
+    const cfg = {inviteCode:code, required:+refs.r.current.value||2, finePerMiss:+refs.f.current.value||5000, maxFine:+refs.m.current.value||10000, adminPassword:refs.p.current.value.trim(), resetTimestamp:0};
     setBusy(true);
     try {
       await sheetsCall('saveConfig', cfg);
@@ -208,6 +224,8 @@ function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing
   const done = cnt>=cfg.required;
   const fine = Math.min(Math.max(0,cfg.required-cnt)*cfg.finePerMiss, cfg.maxFine);
 
+  const allTimeFine = computeAllTimeFine(records, cfg);
+  const beers = Math.floor(allTimeFine / cfg.finePerMiss);
   const names = [...new Set(records.map(r=>r.name))];
   if (!names.includes(me)) names.push(me);
   let tf = 0;
@@ -241,16 +259,16 @@ function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing
       <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:'1rem'}}>
         {Array.from({length:cfg.required},(_,i)=><BigDot key={i} on={i<cnt}/>)}
       </div>
-      <div style={{fontSize:13,marginBottom:'1rem',color:done?'#4caf87':fine>0?'#e09a4c':'#888'}}>
-        {done?'이번 주 인증 완료! 🎉':`${cnt}/${cfg.required}회 완료`}
+      <div style={{fontSize:13,marginBottom:'1rem',color:cnt>=cfg.required?'#4caf87':fine>0?'#e09a4c':'#888'}}>
+        {cnt>=cfg.required?'이번 주 완료! 🎉':`${cnt}/${cfg.required}회 완료`}
       </div>
-      <button disabled={done||tdDone}
-        style={{...S.bb(done||tdDone?'#333':'#1e5f8e'),marginTop:0,opacity:done||tdDone?.4:1}}
+      <button
+        style={{...S.bb('#1e5f8e'),marginTop:0}}
         onClick={onCert}>
         <i className="ti ti-camera"/> 스크린샷으로 인증하기
       </button>
       <div style={{fontSize:12,color:'#666',marginTop:8,minHeight:16}}>
-        {done?'벌금 없음':tdDone?'오늘은 이미 인증했어요':fine>0?`현재 예상 벌금 ${won(fine)}`:''}
+        {fine>0?`현재 예상 벌금 ${won(fine)}`:cnt>=cfg.required?'이번 주 완료 ✓':''}
       </div>
     </div>
 
@@ -280,6 +298,16 @@ function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing
       </div>
       <i className="ti ti-pig-money" style={{fontSize:28,color:'#333'}}/>
     </div>
+
+    {beers >= 0 && <div style={{background:'#1a1400',border:'1px solid #3a3000',borderRadius:12,padding:'12px 16px',marginTop:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+      <div>
+        <div style={{fontSize:12,color:'#888',marginBottom:2}}>누적 벌금 펀드</div>
+        <div style={{fontSize:16,fontWeight:500,color:'#f0c040'}}>
+          🍺 맥주 {beers}잔 적립 중
+        </div>
+        <div style={{fontSize:11,color:'#666',marginTop:2}}>{won(allTimeFine)} 누적 (잔당 {won(cfg.finePerMiss)})</div>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -415,7 +443,20 @@ function AdminScreen({cfg,records,onBack,onCfgSaved}) {
       <button style={{...S.bb(),opacity:busy?.5:1}} onClick={saveRules} disabled={busy}>저장</button>
     </div>
 
-    <div style={S.card}>
+    const [showReset, setShowReset] = useState(false);
+  const [localCfg, setLocalCfg] = useState(cfg);
+
+
+  </div>
+  {showReset && <ResetModal cfg={localCfg} onClose={()=>setShowReset(false)} onReset={nc=>{setLocalCfg(nc);onCfgSaved(nc);}}/>}
+
+  <div style={{...S.card,border:'1px solid #3a1a1a'}}>
+    <div style={S.sec}>🍺 벌금 초기화</div>
+    <div style={{fontSize:13,color:'#888',marginBottom:10}}>누적된 벌금을 0으로 리셋해요. 관리자 비밀번호가 필요해요.</div>
+    <button style={{...S.bb('#8b1a1a'),marginTop:0}} onClick={()=>setShowReset(true)}>초기화하기</button>
+  </div>
+
+  <div style={S.card}>
       <div style={S.sec}>누적 기록 · 정산</div>
       {!weeks.length
         ? <div style={{fontSize:13,color:'#444',textAlign:'center',padding:'1rem'}}>아직 기록이 없어요</div>
@@ -458,6 +499,42 @@ function AdminScreen({cfg,records,onBack,onCfgSaved}) {
 }
 
 // ── 앱 루트 ──────────────────────────────────────────────────
+function ResetModal({cfg, onClose, onReset}) {
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const doReset = async () => {
+    if (pw !== cfg.adminPassword) { setErr('비밀번호가 맞지 않아요'); return; }
+    setBusy(true);
+    try {
+      const nc = {...cfg, resetTimestamp: Date.now()};
+      await sheetsCall('saveConfig', nc);
+      onReset(nc);
+      alert('벌금이 초기화됐어요! 🍺 술 한잔 하세요!');
+      onClose();
+    } catch(e) { setErr('오류: '+e.message); }
+    finally { setBusy(false); }
+  };
+  return <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999,padding:'1rem'}}>
+    <div style={{background:'#1a1a1a',border:'1px solid #333',borderRadius:16,padding:'1.5rem',width:'100%',maxWidth:360}}>
+      <div style={{fontSize:16,fontWeight:500,color:'#fff',marginBottom:8}}>🍺 벌금 초기화</div>
+      <div style={{fontSize:13,color:'#888',marginBottom:16}}>
+        현재까지 누적된 벌금 기록을 초기화합니다.<br/>
+        기존 기록은 삭제되지 않아요.
+      </div>
+      <div style={S.lbl}>관리자 비밀번호</div>
+      <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="비밀번호 입력" style={{marginBottom:8}}/>
+      <div style={S.err}>{err}</div>
+      <div style={{display:'flex',gap:8,marginTop:8}}>
+        <button style={{flex:1,padding:'11px',fontSize:14,background:'#222',border:'1px solid #333',color:'#888',borderRadius:8,cursor:'pointer'}} onClick={onClose}>취소</button>
+        <button style={{...S.bb('#8b1a1a'),flex:1,marginTop:0,opacity:busy?.5:1}} onClick={doReset} disabled={busy}>
+          {busy?'처리 중...':'초기화하기'}
+        </button>
+      </div>
+    </div>
+  </div>;
+}
+
 function App() {
   const [screen,  setScreen]  = useState('loading');
   const [cfg,     setCfg]     = useState(null);
@@ -498,7 +575,7 @@ function App() {
   const login = (name) => { setMe(name); LS.set(AK,{name,verified:true}); };
   const logout = () => { setMe(''); LS.set(AK,{name:'',verified:false}); setScreen('code'); };
 
-  if (screen==='loading') return <div style={S.wrap}><Logo icon="🏃" title="운동 인증 모임"/><Spinner msg="Google Sheets에서 불러오는 중..."/></div>;
+  if (screen==='loading') return <div style={S.wrap}><Logo icon="🏃" title="뚱망 방지 위원회"/><Spinner msg="Google Sheets에서 불러오는 중..."/></div>;
   if (screen==='error')   return <div style={S.wrap}><Logo icon="⚠️" title="연결 오류" sub="Netlify 환경변수(GOOGLE_SERVICE_ACCOUNT, SPREADSHEET_ID)를 확인하세요"/></div>;
   if (screen==='setup')   return <SetupScreen onDone={(cfg,name)=>{ setCfg(cfg); login(name); setScreen('main'); }}/>;
   if (screen==='code')    return <CodeScreen cfg={cfg} onOk={()=>setScreen('name')}/>;
