@@ -179,6 +179,8 @@ function SetupScreen({onDone}) {
         <div><div style={S.lbl}>최대 벌금(원)</div><input ref={refs.m} type="number" defaultValue="10000" step="1000"/></div>
       </div>
       <div style={S.fld}><div style={S.lbl}>내 이름</div><input ref={refs.n} placeholder="홍길동"/></div>
+      <div style={S.fld}><div style={S.lbl}>관리자 비밀번호 (벌금 초기화 시 필요)</div>
+        <input ref={refs.p} type="password" placeholder="비밀번호 설정 (본인만 알 수 있게)"/></div>
       <div style={S.err}>{err}</div>
       <button style={{...S.bb(), opacity:busy?.6:1}} onClick={submit} disabled={busy}>
         {busy ? '저장 중...' : '그룹 만들기'}
@@ -393,23 +395,22 @@ function MainScreen({cfg,records,me,onCert,onLogout,onAdmin,onRefresh,refreshing
       })}
     </div>
 
-    <div style={S.strip}>
-      <div>
-        <div style={{fontSize:12,color:'#666',marginBottom:2}}>이번 주 예상 모금액</div>
-        <div style={{fontSize:18,fontWeight:500,color:tf>0?'#e05c5c':'#4caf87'}}>{tf>0?won(tf):'모두 완료! 🎉'}</div>
-      </div>
-      <i className="ti ti-pig-money" style={{fontSize:28,color:'#333'}}/>
-    </div>}
-
-    {view==='status' && beers >= 0 && <div style={{background:'#1a1400',border:'1px solid #3a3000',borderRadius:12,padding:'12px 16px',marginTop:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-      <div>
-        <div style={{fontSize:12,color:'#888',marginBottom:2}}>누적 벌금 펀드</div>
-        <div style={{fontSize:16,fontWeight:500,color:'#f0c040'}}>
-          🍺 맥주 {beers}잔 적립 중
+    {view==='status' && <>
+      <div style={S.strip}>
+        <div>
+          <div style={{fontSize:12,color:'#666',marginBottom:2}}>이번 주 예상 모금액</div>
+          <div style={{fontSize:18,fontWeight:500,color:tf>0?'#e05c5c':'#4caf87'}}>{tf>0?won(tf):'모두 완료! 🎉'}</div>
         </div>
-        <div style={{fontSize:11,color:'#666',marginTop:2}}>{won(allTimeFine)} 누적 (잔당 {won(cfg.finePerMiss)})</div>
+        <i className="ti ti-pig-money" style={{fontSize:28,color:'#333'}}/>
       </div>
-    </div>}
+      {beers >= 0 && <div style={{background:'#1a1400',border:'1px solid #3a3000',borderRadius:12,padding:'12px 16px',marginTop:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div>
+          <div style={{fontSize:12,color:'#888',marginBottom:2}}>누적 벌금 펀드</div>
+          <div style={{fontSize:16,fontWeight:500,color:'#f0c040'}}>🍺 맥주 {beers}잔 적립 중</div>
+          <div style={{fontSize:11,color:'#666',marginTop:2}}>{won(allTimeFine)} 누적 (잔당 {won(cfg.finePerMiss)})</div>
+        </div>
+      </div>}
+    </>}
   </div>;
 }
 
@@ -422,7 +423,6 @@ function CertScreen({onCancel,onConfirm}) {
 
   const handleFile = async e => {
     const file = e.target.files[0]; if(!file) return;
-    new FileReader().onload=ev=>setPreview(ev.target.result), new FileReader().readAsDataURL(file);
     const r2=new FileReader(); r2.onload=ev=>setPreview(ev.target.result); r2.readAsDataURL(file);
     setSt('loading');
     try {
@@ -482,6 +482,43 @@ function CertScreen({onCancel,onConfirm}) {
     </>)}
 
     <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleFile}/>
+  </div>;
+}
+
+// ── 벌금 초기화 모달 ─────────────────────────────────────────
+function ResetModal({cfg, onClose, onReset}) {
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const doReset = async () => {
+    if (pw !== cfg.adminPassword) { setErr('비밀번호가 맞지 않아요'); return; }
+    setBusy(true);
+    try {
+      const nc = {...cfg, resetTimestamp: Date.now()};
+      await sheetsCall('saveConfig', nc);
+      onReset(nc);
+      alert('벌금이 초기화됐어요! 🍺 술 한잔 하세요!');
+      onClose();
+    } catch(e) { setErr('오류: '+e.message); }
+    finally { setBusy(false); }
+  };
+  return <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999,padding:'1rem'}}>
+    <div style={{background:'#1a1a1a',border:'1px solid #333',borderRadius:16,padding:'1.5rem',width:'100%',maxWidth:360}}>
+      <div style={{fontSize:16,fontWeight:500,color:'#fff',marginBottom:8}}>🍺 벌금 초기화</div>
+      <div style={{fontSize:13,color:'#888',marginBottom:16}}>
+        현재까지 누적된 벌금 기록을 초기화합니다.<br/>
+        기존 기록은 삭제되지 않아요.
+      </div>
+      <div style={S.lbl}>관리자 비밀번호</div>
+      <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="비밀번호 입력" style={{marginBottom:8}}/>
+      <div style={S.err}>{err}</div>
+      <div style={{display:'flex',gap:8,marginTop:8}}>
+        <button style={{flex:1,padding:'11px',fontSize:14,background:'#222',border:'1px solid #333',color:'#888',borderRadius:8,cursor:'pointer'}} onClick={onClose}>취소</button>
+        <button style={{...S.bb('#8b1a1a'),flex:1,marginTop:0,opacity:busy?.5:1}} onClick={doReset} disabled={busy}>
+          {busy?'처리 중...':'초기화하기'}
+        </button>
+      </div>
+    </div>
   </div>;
 }
 
@@ -556,7 +593,10 @@ function AdminScreen({cfg, records, me, onBack, onCfgSaved, onNameChange}) {
     {/* 내 이름 변경 */}
     <div style={S.card}>
       <div style={S.sec}>내 이름 변경</div>
-      <div style={{fontSize:13,color:'#666',marginBottom:8}}>현재 이름: <strong style={{color:'#ccc'}}>{me}</strong></div>
+      <div style={{fontSize:13,color:'#666',marginBottom:4}}>현재 이름: <strong style={{color:'#ccc'}}>{me}</strong></div>
+      <div style={{fontSize:11,color:'#555',background:'#111',padding:'6px 10px',borderRadius:6,marginBottom:8}}>
+        ℹ️ 이름 변경 후 기존 인증 기록은 이전 이름으로 남아요. 기록 통일이 필요하면 구글 시트에서 직접 수정하세요.
+      </div>
       <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="새 이름 입력" style={{fontSize:14}}/>
       <div style={S.err}>{nameErr}</div>
       <button style={{...S.bb(),marginTop:8}} onClick={changeName}>이름 변경</button>
@@ -636,42 +676,6 @@ function AdminScreen({cfg, records, me, onBack, onCfgSaved, onNameChange}) {
 }
 
 // ── 앱 루트 ──────────────────────────────────────────────────
-function ResetModal({cfg, onClose, onReset}) {
-  const [pw, setPw] = useState('');
-  const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(false);
-  const doReset = async () => {
-    if (pw !== cfg.adminPassword) { setErr('비밀번호가 맞지 않아요'); return; }
-    setBusy(true);
-    try {
-      const nc = {...cfg, resetTimestamp: Date.now()};
-      await sheetsCall('saveConfig', nc);
-      onReset(nc);
-      alert('벌금이 초기화됐어요! 🍺 술 한잔 하세요!');
-      onClose();
-    } catch(e) { setErr('오류: '+e.message); }
-    finally { setBusy(false); }
-  };
-  return <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999,padding:'1rem'}}>
-    <div style={{background:'#1a1a1a',border:'1px solid #333',borderRadius:16,padding:'1.5rem',width:'100%',maxWidth:360}}>
-      <div style={{fontSize:16,fontWeight:500,color:'#fff',marginBottom:8}}>🍺 벌금 초기화</div>
-      <div style={{fontSize:13,color:'#888',marginBottom:16}}>
-        현재까지 누적된 벌금 기록을 초기화합니다.<br/>
-        기존 기록은 삭제되지 않아요.
-      </div>
-      <div style={S.lbl}>관리자 비밀번호</div>
-      <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="비밀번호 입력" style={{marginBottom:8}}/>
-      <div style={S.err}>{err}</div>
-      <div style={{display:'flex',gap:8,marginTop:8}}>
-        <button style={{flex:1,padding:'11px',fontSize:14,background:'#222',border:'1px solid #333',color:'#888',borderRadius:8,cursor:'pointer'}} onClick={onClose}>취소</button>
-        <button style={{...S.bb('#8b1a1a'),flex:1,marginTop:0,opacity:busy?.5:1}} onClick={doReset} disabled={busy}>
-          {busy?'처리 중...':'초기화하기'}
-        </button>
-      </div>
-    </div>
-  </div>;
-}
-
 function App() {
   const [screen,  setScreen]  = useState('loading');
   const [cfg,     setCfg]     = useState(null);
