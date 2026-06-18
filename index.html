@@ -11,10 +11,28 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0f0f0f;color:#e8e8e8;font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+  body{
+    color:#e8e8e8;
+    font-family:'Noto Sans KR',sans-serif;
+    min-height:100vh;
+    background-image: url('https://raw.githubusercontent.com/HanCL86/workout_tracker/main/1000044882');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #root { position: relative; z-index: 1; }
   input,button{font-family:inherit}
-  input{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 12px;color:#e8e8e8;font-size:14px;width:100%;outline:none;transition:border .15s}
-  input:focus{border-color:#1e5f8e}
+  input{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;width:100%;outline:none;transition:border .15s}
+  input:focus{border-color:#ffd700}
   button{border:none;cursor:pointer;border-radius:8px;transition:opacity .15s}
   button:hover:not(:disabled){opacity:.85}
   button:disabled{cursor:not-allowed}
@@ -158,17 +176,17 @@ function allTimeFine(records, cfg) {
 
 const S = {
   wrap:  { maxWidth: 480, margin: '0 auto', padding: '1rem 1rem 3rem' },
-  card:  { background: '#161616', border: '1px solid #222', borderRadius: 14, padding: '1.25rem', marginBottom: 12 },
+  card:  { background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 14, padding: '1.25rem', marginBottom: 12, backdropFilter: 'blur(12px)', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' },
   tb:    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' },
   logo:  { textAlign: 'center', padding: '2.5rem 0 1.5rem' },
-  lbl:   { fontSize: 12, color: '#666', marginBottom: 5 },
+  lbl:   { fontSize: 12, color: '#777', marginBottom: 5 },
   fld:   { marginBottom: 14 },
-  bb:    function(bg) { return { width: '100%', padding: '13px', fontSize: 15, fontWeight: 500, background: 'linear-gradient(135deg,' + (bg || '#1e5f8e') + ',#0f3460)', color: '#fff', borderRadius: 10, cursor: 'pointer', marginTop: 8 }; },
-  sm:    { fontSize: 12, padding: '5px 11px', background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#888', borderRadius: 7 },
-  sec:   { fontSize: 10, color: '#444', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 },
+  bb:    function(bg) { return { width: '100%', padding: '13px', fontSize: 15, fontWeight: 500, background: bg ? 'linear-gradient(135deg,' + bg + ',#0f3460)' : 'linear-gradient(135deg,rgba(255,215,0,0.8),rgba(255,140,0,0.8))', color: '#1a1a1a', borderRadius: 10, cursor: 'pointer', marginTop: 8, boxShadow: '0 4px 15px rgba(0,0,0,0.3)', fontWeight: 700 }; },
+  sm:    { fontSize: 12, padding: '5px 11px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: '#ddd', borderRadius: 7 },
+  sec:   { fontSize: 10, color: '#888', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 },
   err:   { fontSize: 12, color: '#e05c5c', marginTop: 6, minHeight: 16 },
-  strip: { background: '#121212', border: '1px solid #1e1e1e', borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  spin:  { textAlign: 'center', padding: '3rem 0', color: '#555' },
+  strip: { background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backdropFilter: 'blur(12px)' },
+  spin:  { textAlign: 'center', padding: '3rem 0', color: '#666' },
 };
 
 function Logo(props) {
@@ -176,7 +194,7 @@ function Logo(props) {
     <div style={S.logo}>
       <div style={{ fontSize: 42, marginBottom: 10 }}>{props.icon}</div>
       <h1 style={{ fontSize: 22, fontWeight: 500, color: '#fff', margin: '0 0 4px' }}>{props.title}</h1>
-      {props.sub && <p style={{ fontSize: 13, color: '#666', margin: 0 }}>{props.sub}</p>}
+      {props.sub && <p style={{ fontSize: 13, color: '#888', margin: 0 }}>{props.sub}</p>}
     </div>
   );
 }
@@ -506,9 +524,9 @@ function MainScreen(props) {
               const fc = ok ? '#4caf87' : r.fine > 0 ? '#e05c5c' : '#666';
               const ft = ok ? '완료' : r.fine > 0 ? '-' + won(r.fine) : r.cnt + '/' + cfg.required;
               return (
-                <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 1.25rem', borderBottom: '1px solid #1a1a1a', background: isMe ? '#1a1a1a' : 'transparent', margin: '0 -1.25rem' }}>
+                <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 1.25rem', borderBottom: '1px solid #1a1a1a', background: isMe ? 'rgba(255,215,0,0.15)' : 'transparent', margin: '0 -1.25rem' }}>
                   <span style={{ fontSize: 12, color: '#444', width: 16, textAlign: 'center' }}>{i + 1}</span>
-                  <span style={{ fontSize: 14, color: '#ddd', flex: 1 }}>
+                  <span style={{ fontSize: 14, color: '#e8e8e8', flex: 1 }}>
                     {r.name}
                     {isMe && <span style={{ fontSize: 11, color: '#444', marginLeft: 4 }}>(나)</span>}
                   </span>
@@ -532,8 +550,8 @@ function MainScreen(props) {
             <i className="ti ti-pig-money" style={{ fontSize: 28, color: '#333' }} />
           </div>
 
-          <div style={{ background: '#1a1400', border: '1px solid #3a3000', borderRadius: 12, padding: '12px 16px', marginTop: 12 }}>
-            <div style={{ fontSize: 12, color: '#888', marginBottom: 2 }}>누적 벌금 펀드</div>
+          <div style={{ background: 'rgba(255,215,0,0.15)', border: '1px solid rgba(255,215,0,0.3)', borderRadius: 12, padding: '12px 16px', marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: '#888', marginBottom: 2, color: '#b06000' }}>누적 벌금 펀드</div>
             <div style={{ fontSize: 16, fontWeight: 500, color: '#f0c040' }}>🍺 맥주 {beers}잔 적립 중</div>
             <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{won(total)} 누적 (잔당 {won(cfg.finePerMiss)})</div>
           </div>
@@ -612,7 +630,7 @@ function CertScreen(props) {
           style={{ textAlign: 'center', padding: '2.5rem 1rem', cursor: 'pointer', border: '1.5px dashed #2a2a2a', borderRadius: 14, marginBottom: 12 }}
         >
           <i className="ti ti-upload" style={{ fontSize: 36, color: '#444' }} />
-          <div style={{ fontSize: 15, fontWeight: 500, margin: '10px 0 4px', color: '#ccc' }}>운동 앱 스크린샷 업로드</div>
+          <div style={{ fontSize: 15, fontWeight: 500, margin: '10px 0 4px', color: '#bbb' }}>운동 앱 스크린샷 업로드</div>
           <div style={{ fontSize: 12, color: '#555' }}>여러 장 동시 선택 가능</div>
           <div style={{ fontSize: 11, color: '#444', marginTop: 4 }}>삼성헬스 · 애플피트니스 · 나이키런 · 스트라바 · 가민</div>
         </div>
@@ -864,7 +882,7 @@ function AdminScreen(props) {
 
       <div style={S.card}>
         <div style={S.sec}>내 이름 변경</div>
-        <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>현재 이름: <strong style={{ color: '#ccc' }}>{me}</strong></div>
+        <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>현재 이름: <strong style={{ color: '#bbb' }}>{me}</strong></div>
         <div style={{ fontSize: 11, color: '#555', background: '#111', padding: '6px 10px', borderRadius: 6, marginBottom: 8 }}>
           이름 변경 후 기존 인증 기록은 이전 이름으로 남아요. 기록 통일이 필요하면 구글 시트에서 직접 수정하세요.
         </div>
@@ -875,7 +893,7 @@ function AdminScreen(props) {
 
       <div style={S.card}>
         <div style={S.sec}>초대 코드 변경</div>
-        <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>현재: <strong style={{ color: '#aaa', letterSpacing: 3 }}>{localCfg.inviteCode}</strong></div>
+        <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>현재: <strong style={{ color: '#bbb', letterSpacing: 3 }}>{localCfg.inviteCode}</strong></div>
         <div style={{ fontSize: 11, color: '#664', background: '#1a1800', padding: '6px 10px', borderRadius: 6, marginBottom: 8 }}>
           ⚠ 이름 변경은 위 내 이름 변경을 사용하세요. 여기는 그룹 입장 코드만 변경하는 곳이에요.
         </div>
@@ -925,7 +943,7 @@ function AdminScreen(props) {
                     const ok = c >= cfg.required;
                     return (
                       <div key={n} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid #1a1a1a', fontSize: 13 }}>
-                        <span style={{ color: '#ccc' }}>{n}</span>
+                        <span style={{ color: '#bbb' }}>{n}</span>
                         <span style={{ color: '#666', minWidth: 70, textAlign: 'center' }}>{fDur(dur)}</span>
                         <span style={{ fontWeight: 500, minWidth: 60, textAlign: 'right', color: ok ? '#4caf87' : f > 0 ? '#e05c5c' : '#666' }}>
                           {ok ? '완료' : f > 0 ? '-' + won(f) : c + '/' + cfg.required}
@@ -940,7 +958,7 @@ function AdminScreen(props) {
               <div style={{ fontSize: 11, color: '#444', marginBottom: 6 }}>누적 합계</div>
               {names.map(n => (
                 <div key={n} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid #1a1a1a', fontSize: 13 }}>
-                  <span style={{ fontWeight: 500, color: '#ccc' }}>{n}</span>
+                  <span style={{ fontWeight: 500, color: '#bbb' }}>{n}</span>
                   <span style={{ color: '#666', minWidth: 70, textAlign: 'center' }}>{fDur(cT[n])}</span>
                   <span style={{ fontWeight: 500, minWidth: 60, textAlign: 'right', color: cF[n] > 0 ? '#e05c5c' : '#4caf87' }}>
                     {cF[n] > 0 ? '-' + won(cF[n]) : '0원'}
