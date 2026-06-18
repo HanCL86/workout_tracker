@@ -7,10 +7,10 @@ exports.handler = async (event) => {
   };
 
   try {
-    const { image_base64 } = JSON.parse(event.body);
+    const { image_base64, client_date } = JSON.parse(event.body);
 
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    // 클라이언트(브라우저)가 보낸 날짜 사용 - 서버는 UTC라 시간대가 다를 수 있음
+    const todayStr = client_date || new Date().toISOString().split('T')[0];
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
