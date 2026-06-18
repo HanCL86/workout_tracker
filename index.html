@@ -15,21 +15,11 @@
     color:#e8e8e8;
     font-family:'Noto Sans KR',sans-serif;
     min-height:100vh;
-    background-image: url('https://raw.githubusercontent.com/HanCL86/workout_tracker/main/1000044882');
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://raw.githubusercontent.com/HanCL86/workout_tracker/main/1000044882');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    position: relative;
   }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    pointer-events: none;
-    z-index: 0;
-  }
-  #root { position: relative; z-index: 1; }
   input,button{font-family:inherit}
   input{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;width:100%;outline:none;transition:border .15s}
   input:focus{border-color:#ffd700}
