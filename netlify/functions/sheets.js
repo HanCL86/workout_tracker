@@ -76,7 +76,7 @@ exports.handler = async (event) => {
     // ── getAll: 설정 + 인증기록 전체 읽기 ─────────────────────
     if (body.action === 'getAll') {
       const [cfgData, recData] = await Promise.all([
-        readRange(token, 'config!A1:D2'),
+        readRange(token, 'config!A1:G2'),
         readRange(token, 'records!A:F'),
       ]);
 
@@ -94,6 +94,7 @@ exports.handler = async (event) => {
           maxFine:        parseInt(v[i('maxFine')])        || 10000,
           adminPassword:  v[i('adminPassword')]            || '',
           resetTimestamp: parseInt(v[i('resetTimestamp')]) || 0,
+          iconConfig:     (() => { try { return JSON.parse(v[i('iconConfig')] || '{}'); } catch(e) { return {}; } })(),
         };
       }
 
@@ -120,9 +121,9 @@ exports.handler = async (event) => {
 
     // ── saveConfig: 설정 저장 (최초 설정 & 변경 모두) ─────────
     if (body.action === 'saveConfig') {
-      await writeRange(token, 'config!A1:F2', [
-        ['inviteCode', 'required', 'finePerMiss', 'maxFine', 'adminPassword', 'resetTimestamp'],
-        [body.inviteCode, body.required, body.finePerMiss, body.maxFine, body.adminPassword||'', body.resetTimestamp||0],
+      await writeRange(token, 'config!A1:G2', [
+        ['inviteCode', 'required', 'finePerMiss', 'maxFine', 'adminPassword', 'resetTimestamp', 'iconConfig'],
+        [body.inviteCode, body.required, body.finePerMiss, body.maxFine, body.adminPassword||'', body.resetTimestamp||0, JSON.stringify(body.iconConfig||{})],
       ]);
       // 인증기록 헤더 없으면 생성
       const rh = await readRange(token, 'records!A1:F1');
