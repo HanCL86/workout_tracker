@@ -702,42 +702,39 @@ function CertScreen(props) {
 function IconPicker(props) {
   const { me, cfg, onSave } = props;
   const existing = (cfg.iconConfig && cfg.iconConfig[me]) || null;
-  const defaultIcon = MEMBER_ICONS[0];
-  const [shape, setShape] = useState((existing && existing.shape) || defaultIcon.shape);
-  const [color, setColor] = useState((existing && existing.color) || defaultIcon.color);
+  const [shape, setShape] = useState((existing && existing.shape) || '👻');
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
+    if (!shape.trim()) return;
     setBusy(true);
     const newIconCfg = Object.assign({}, cfg.iconConfig || {});
-    newIconCfg[me] = { shape, color };
+    newIconCfg[me] = { shape: shape.trim() };
     await onSave(newIconCfg);
     setBusy(false);
   };
 
   return (
     <div>
-      <div style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
-        미리보기: <span style={{ fontSize: 28 }}>{shape}</span>
+      <div style={{ fontSize: 13, color: '#888', marginBottom: 10 }}>
+        현재: <span style={{ fontSize: 28 }}>{shape || '?'}</span>
       </div>
-      <div style={S.lbl}>모양 선택</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-        {SHAPE_OPTS.map(s => (
-          <button key={s} onClick={() => setShape(s)} style={{
-            fontSize: 18, width: 38, height: 38, borderRadius: 8, cursor: 'pointer',
-            background: shape === s ? '#1e3a5f' : '#111',
-            border: '1px solid ' + (shape === s ? '#1e5f8e' : '#2a2a2a'),
-          }}>{s}</button>
-        ))}
+      <div style={S.lbl}>이모지 직접 입력</div>
+      <input
+        value={shape}
+        onChange={e => setShape(e.target.value)}
+        placeholder="이모지를 입력하세요 (예: 👻)"
+        style={{ fontSize: 22, textAlign: 'center', letterSpacing: 4 }}
+      />
+      <div style={{ fontSize: 11, color: '#888', marginTop: 6, marginBottom: 8 }}>
+        키보드 이모지 버튼(😊) 또는 길게 눌러서 이모지 선택
       </div>
-
       <button style={Object.assign({}, S.bb(), { marginTop: 0, opacity: busy ? 0.5 : 1 })} onClick={save} disabled={busy}>
         {busy ? '저장 중...' : '아이콘 저장'}
       </button>
     </div>
   );
 }
-
 function ResetModal(props) {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
