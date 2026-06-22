@@ -792,6 +792,7 @@ function AdminScreen(props) {
   const [showReset, setShowReset] = useState(false);
   const [localCfg, setLocalCfg] = useState(cfg);
 
+  const thisWk = wKey();
   const weeks = [...new Set(records.map(r => r.week))].sort().reverse();
   const names = [...new Set(records.map(r => r.name))];
   const cT = {}, cF = {};
@@ -926,7 +927,7 @@ function AdminScreen(props) {
                     const c = new Set(rs.filter(r => (r.duration || 0) >= 30).map(r => r.date)).size;
                     const dur = rs.reduce((s, r) => s + (r.duration || 0), 0);
                     const f = Math.min(Math.max(0, cfg.required - c) * cfg.finePerMiss, cfg.maxFine);
-                    cT[n] += dur; cF[n] += f;
+                    if (wk !== thisWk) { cT[n] += dur; cF[n] += f; }
                     const ok = c >= cfg.required;
                     return (
                       <div key={n} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid #1a1a1a', fontSize: 13 }}>
